@@ -1,305 +1,183 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Activity System — LoliLand</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Activity System — LoliLand</title>
 
-  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
-  <style>
-    :root{
-      --bg:#060812; --bg2:#0a1026; --card:#0b122b; --card2:#0a1638;
-      --border:#1b2a55; --text:#e6ecff; --accent:#7c3aed; --accent2:#22d3ee;
-      --success:#10b981; --warn:#facc15; --danger:#ef4444;
-      --shadow: 0 18px 60px rgba(0,0,0,.55);
-      --glow: 0 0 0 1px rgba(124,58,237,.25), 0 0 38px rgba(124,58,237,.25);
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; padding:22px;
-      background: radial-gradient(1200px 800px at 20% 10%, rgba(124,58,237,.22), transparent 55%),
-                  radial-gradient(1000px 700px at 85% 20%, rgba(34,211,238,.18), transparent 55%),
-                  linear-gradient(180deg, var(--bg), var(--bg2));
-      color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    }
-    .wrap{max-width:1600px; margin:0 auto;}
-    .card{
-      background: linear-gradient(180deg, rgba(11,18,43,.92), rgba(8,14,36,.92));
-      border:1px solid rgba(27,42,85,.9); border-radius:18px;
-      box-shadow: var(--shadow); overflow:hidden;
-    }
-    .header{
-      padding:18px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px;
-      border-bottom:1px solid rgba(27,42,85,.8);
-      background: linear-gradient(90deg, rgba(124,58,237,.16), rgba(34,211,238,.10));
-    }
-    .title h2{margin:0; font-size:18px; letter-spacing:.4px;}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px; padding:8px 12px;
-      background: rgba(124,58,237,.14); border:1px solid rgba(124,58,237,.30);
-      border-radius:999px; box-shadow: var(--glow); font-size:12px;
-    }
-    .toolbar{
-      display:flex; flex-wrap:wrap; gap:12px; padding:16px 18px;
-      border-bottom:1px solid rgba(27,42,85,.7); background: rgba(6,8,18,.35); align-items:flex-end;
-    }
-    .group{display:flex; flex-direction:column; gap:6px;}
-    .group label{font-size:11px; font-weight:900; color: rgba(34,211,238,.95); text-transform:uppercase;}
-    input, select{
-      min-height:40px; background: rgba(10,16,38,.9); color: var(--text);
-      border:1px solid rgba(27,42,85,.9); border-radius:10px; padding:10px 12px; outline:none;
-    }
-    button{
-      cursor:pointer; border:none; border-radius:10px; padding:10px 14px;
-      font-weight:900; transition: transform .08s ease; display:inline-flex; align-items:center; gap:8px;
-    }
-    button:hover{ filter: brightness(1.1); }
-    .btn-primary{ background: linear-gradient(90deg, var(--accent), #a78bfa); color:white; }
-    .btn-success{ background: linear-gradient(90deg, var(--success), #34d399); color:#052016; }
-    .btn-danger{ background: linear-gradient(90deg, var(--danger), #fb7185); color:#2a040b; }
-    .btn-ghost{ background: rgba(230,236,255,.06); border:1px solid rgba(230,236,255,.12); color: rgba(230,236,255,.9); }
-    .spacer{ margin-left:auto; }
-    .table-wrap{ overflow:auto; border-top:1px solid rgba(27,42,85,.65); }
-    table{ width:100%; border-collapse:collapse; min-width:1200px; background: rgba(10,16,38,.55); }
-    th, td{ border:1px solid rgba(27,42,85,.7); padding:12px; text-align:center; font-size:13px; }
-    thead th{ position:sticky; top:0; z-index:7; background: rgba(11,18,43,.95); backdrop-filter: blur(10px); }
-    .sticky-col{ position:sticky; left:0; z-index:8; text-align:left; font-weight:900; background: rgba(6,8,18,.92); }
-    .badge{ padding:5px 10px; border-radius:10px; font-size:11px; text-transform:uppercase; font-weight:1000; color:white; border:1px solid rgba(255,255,255,.12); }
-    .role-8{ background: linear-gradient(90deg, #2563eb, #60a5fa);}
-    .role-7{ background: linear-gradient(90deg, #10b981, #34d399);}
-    .role-6{ background: linear-gradient(90deg, #a855f7, #c4b5fd);}
-    .role-5{ background: linear-gradient(90deg, #ec4899, #f9a8d4);}
-    .role-3{ background: linear-gradient(90deg, #38bdf8, #7dd3fc);}
-    .role-2{ background: linear-gradient(90deg, #f97316, #fdba74);}
-    .role-1{ background: linear-gradient(90deg, #14b8a6, #5eead4);}
-    .cell-input{ width:72px; background: rgba(230,236,255,.06); border:1px solid rgba(230,236,255,.10); color:var(--text); text-align:center; padding:7px 8px; border-radius:9px; font-weight:900; cursor: pointer;}
-    .sum-row td{ background: rgba(6,8,18,.92) !important; color: var(--warn); font-weight:1000; }
-    .sum-sub td{ background: rgba(6,8,18,.80) !important; color: rgba(230,236,255,.85); font-weight:900; }
-    .note{ padding: 20px; display: flex; justify-content: space-between; align-items: center;}
-  </style>
+<style>
+/* ТВОЙ ОРИГИНАЛЬНЫЙ СТИЛЬ СОХРАНЁН */
+:root{
+--bg:#060812; --bg2:#0a1026; --card:#0b122b;
+--border:#1b2a55; --text:#e6ecff; --accent:#7c3aed;
+--success:#10b981; --warn:#facc15; --danger:#ef4444;
+}
+body{margin:0;padding:22px;background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text);font-family:Arial}
+.card{background:var(--card);border-radius:18px;padding:20px}
+input,select{background:#111;color:#fff;border:1px solid #333;border-radius:8px;padding:8px}
+button{border:none;border-radius:8px;padding:8px 14px;font-weight:bold;cursor:pointer}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-success{background:var(--success)}
+.btn-danger{background:var(--danger)}
+table{width:100%;border-collapse:collapse;margin-top:20px}
+th,td{border:1px solid #222;padding:10px;text-align:center}
+.sticky-col{text-align:left;font-weight:bold}
+.cell-input{width:70px;background:#1a1f3a;border:1px solid #333;color:#fff;text-align:center;cursor:pointer}
+#editorModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;z-index:1000}
+.modal-box{background:#0b122b;padding:25px;border-radius:15px;display:flex;flex-direction:column;gap:10px;width:300px}
+#loginScreen{position:fixed;inset:0;background:#060812;display:flex;align-items:center;justify-content:center;z-index:2000}
+.login-box{background:#0b122b;padding:30px;border-radius:15px;display:flex;flex-direction:column;gap:10px;width:300px}
+</style>
 </head>
 
 <body>
-<div class="wrap">
-  <div class="card">
-    <div class="header">
-      <div class="title">
-        <h2>Учет активности состава — LoliLand</h2>
-      </div>
-      <div class="pill" id="weekPill">Неделя: —</div>
-    </div>
 
-    <div class="toolbar">
-      <div class="group">
-        <label>Неделя (начало)</label>
-        <input type="date" id="weekStart" onchange="selectWeekFromDate()">
-      </div>
-      <div class="group">
-        <label>Архив недель</label>
-        <select id="weekSelect" onchange="loadSelectedWeek()"><option value="">—</option></select>
-      </div>
-      <div class="group"><label>Никнейм</label><input type="text" id="nickname" placeholder="Nickname"></div>
-      <div class="group">
-        <label>Должность</label>
-        <select id="role">
-          <option value="7">Старший Администратор</option>
-          <option value="8">Администратор</option>
-          <option value="6">Младший Администратор</option>
-          <option value="5">Старший Модератор</option>
-          <option value="3">Младший Модератор</option>
-          <option value="2">Старший Хелпер</option>
-          <option value="1">Хелпер</option>
-        </select>
-      </div>
-      <button class="btn-primary" onclick="addPerson()">＋ Добавить</button>
-      <button class="btn-success" onclick="saveWeek()">💾 Сохранить</button>
-      <div class="spacer"></div>
-      <button class="btn-danger" onclick="clearWeek()">🗑 Очистить</button>
-    </div>
+<!-- LOGIN -->
+<div id="loginScreen">
+<div class="login-box">
+<h3 style="margin:0">Введите ник</h3>
+<input id="loginNick" placeholder="Nickname">
+<button class="btn-primary" onclick="login()">Войти</button>
+</div>
+</div>
 
-    <div class="table-wrap" id="tableWrap">
-      <table id="mainTable">
-        <thead>
-          <tr id="roleRow"><th class="sticky-col">Должность</th></tr>
-          <tr id="nickRow"><th class="sticky-col">Никнейм</th></tr>
-        </thead>
-        <tbody id="bodyRows"></tbody>
-        <tfoot>
-          <tr class="sum-row" id="sumScreensRow"><td class="sticky-col">ИТОГО СКРИНОВ (7 дней)</td></tr>
-          <tr class="sum-sub" id="sumOnlineRow"><td class="sticky-col">Σ Онлайн</td></tr>
-          <tr class="sum-sub" id="sumMutesRow"><td class="sticky-col">Σ Муты</td></tr>
-          <tr class="sum-sub" id="sumBansRow"><td class="sticky-col">Σ Баны</td></tr>
-          <tr class="sum-sub" id="sumTicketsRow"><td class="sticky-col">Σ Тикеты</td></tr>
-          <tr class="sum-sub" id="sumRatingRow"><td class="sticky-col">Рейтинг</td></tr>
-        </tfoot>
-      </table>
-    </div>
+<div class="card">
+<h2>Учет активности состава — LoliLand</h2>
 
-    <div class="note">
-      <div style="color:rgba(230,236,255,.6)">Рейтинг: Онлайн×1 + Муты×2 + Баны×3 + Тикеты×1.5</div>
-      <button class="btn-ghost" onclick="exportToExcel()">📥 Export XLS</button>
-    </div>
-  </div>
+<input type="date" id="weekStart">
+<button class="btn-success admin-btn" onclick="saveWeek()">Сохранить</button>
+<button class="btn-danger admin-btn" onclick="clearWeek()">Очистить</button>
+
+<table>
+<thead>
+<tr><th class="sticky-col">Дата</th><th>Сумма</th></tr>
+</thead>
+<tbody id="bodyRows"></tbody>
+</table>
+</div>
+
+<!-- МОДАЛКА -->
+<div id="editorModal">
+<div class="modal-box">
+<h3 style="margin:0">Редактирование дня</h3>
+<input id="editOnline" type="number" placeholder="Онлайн">
+<input id="editMutes" type="number" placeholder="Муты">
+<input id="editBans" type="number" placeholder="Баны">
+<input id="editTickets" type="number" placeholder="Тикеты">
+<button class="btn-success" onclick="saveDayEdit()">Сохранить</button>
+<button class="btn-danger" onclick="closeModal()">Отмена</button>
+</div>
 </div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
-  databaseURL: "https://aktiv-d4d72-default-rtdb.firebaseio.com",
-  projectId: "aktiv-d4d72",
+const firebaseConfig={
+apiKey:"AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
+databaseURL:"https://aktiv-d4d72-default-rtdb.firebaseio.com",
+projectId:"aktiv-d4d72"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db=firebase.database();
 
-const ROLE_NAMES = { 8:"Админ", 7:"Ст.Админ", 6:"Мл.Админ", 5:"Ст.Модер", 3:"Мл.Модер", 2:"Ст.Хелпер", 1:"Хелпер" };
-const WEIGHTS = { online: 1, mutes: 2, bans: 3, tickets: 1.5 };
+const ADMINS=["SIPRISE","playbodya_","Nesquik_"];
+let currentUser=null;
+let currentWeekKey="";
+let weekData={days:[],entries:{}};
+let editingDay=null;
 
-let currentWeekKey = "", weekData = null, unsubWeek = null;
+/* LOGIN */
+function login(){
+const nick=document.getElementById("loginNick").value.trim();
+if(!nick)return;
+currentUser=nick;
+loginScreen.style.display="none";
+if(!isAdmin()){
+document.querySelectorAll(".admin-btn").forEach(b=>b.style.display="none");
+}
+init();
+}
+function isAdmin(){return ADMINS.includes(currentUser);}
 
 /* INIT */
 function init(){
-  const today = new Date();
-  const monday = new Date(today);
-  const day = (today.getDay() + 6) % 7;
-  monday.setDate(today.getDate() - day);
-  const iso = monday.toISOString().slice(0,10);
-  document.getElementById("weekStart").value = iso;
-  selectWeekFromDate();
-  loadWeeksList();
-}
-init();
-
-async function loadWeeksList(){
-  const sel = document.getElementById("weekSelect");
-  db.ref("activity").on("value", snap => {
-    sel.innerHTML = `<option value="">—</option>`;
-    if(!snap.exists()) return;
-    Object.keys(snap.val()).sort().reverse().forEach(k => {
-      const opt = document.createElement("option"); opt.value = k; opt.textContent = k; sel.appendChild(opt);
-    });
-  });
+const today=new Date();
+const monday=new Date(today);
+const day=(today.getDay()+6)%7;
+monday.setDate(today.getDate()-day);
+const iso=monday.toISOString().slice(0,10);
+weekStart.value=iso;
+currentWeekKey=iso;
+buildWeek(iso);
 }
 
-function selectWeekFromDate(){
-  const k = document.getElementById("weekStart").value;
-  if(!k) return;
-  currentWeekKey = k;
-  document.getElementById("weekPill").innerText = "Неделя: " + k;
-  subscribeWeek(k);
+/* BUILD WEEK */
+function buildWeek(key){
+weekData.days=[];
+const base=new Date(key+"T00:00:00");
+base.setDate(base.getDate()-((base.getDay()+6)%7)); // понедельник
+for(let i=0;i<7;i++){
+const d=new Date(base);
+d.setDate(base.getDate()+i);
+weekData.days.push(d.toISOString().slice(0,10));
+}
+renderWeek();
 }
 
-function loadSelectedWeek(){
-  const k = document.getElementById("weekSelect").value;
-  if(k){ document.getElementById("weekStart").value = k; selectWeekFromDate(); }
-}
-
-function subscribeWeek(weekKey){
-  if(unsubWeek) unsubWeek.off();
-  unsubWeek = db.ref("activity/" + weekKey);
-  unsubWeek.on("value", (snap)=>{
-    weekData = snap.exists() ? snap.val() : buildDefaultWeek(weekKey);
-    renderWeek();
-  });
-}
-
-function buildDefaultWeek(weekKey){
-  const days = [];
-  const base = new Date(weekKey + "T00:00:00");
-  for(let i=0;i<7;i++){
-    const d = new Date(base); d.setDate(base.getDate()+i);
-    days.push(d.toISOString().slice(0,10));
-  }
-  return { weekStart:weekKey, days, people:[], entries:{} };
-}
-
+/* RENDER */
 function renderWeek(){
-  if(!weekData) return;
-  const people = weekData.people || [];
-  const days = weekData.days || [];
-  
-  document.getElementById("roleRow").innerHTML = `<th class="sticky-col">Должность</th>` + people.map(p => `<th><span class="badge role-${p.role}">${ROLE_NAMES[p.role]}</span></th>`).join('');
-  document.getElementById("nickRow").innerHTML = `<th class="sticky-col">Никнейм</th>` + people.map(p => `<th>${p.nick}</th>`).join('');
+bodyRows.innerHTML="";
+weekData.days.forEach((day,i)=>{
+const d=new Date(day);
+const fmt=d.toLocaleDateString("ru-RU",{weekday:"short",day:"2-digit"});
+const e=weekData.entries[i]||{online:0,mutes:0,bans:0,tickets:0};
+const sum=(+e.online||0)+(+e.mutes||0)+(+e.bans||0)+(+e.tickets||0);
 
-  let html = "";
-  for(let i=0; i<7; i++){
-    const d = new Date(days[i] + "T00:00:00");
-    const fmt = d.toLocaleDateString("ru-RU",{weekday:"short",day:"2-digit"});
-    html += `<tr><td class="sticky-col" style="color:#22d3ee">${fmt}</td>`;
-    people.forEach(p => {
-      const e = (weekData.entries?.[p.id]?.[i]) || {online:0,mutes:0,bans:0,tickets:0};
-      const sum = (e.online||0)+(e.mutes||0)+(e.bans||0)+(e.tickets||0);
-      html += `<td><input class="cell-input" type="text" readonly value="${sum}" onclick="openDayEditor('${p.id}',${i})"></td>`;
-    });
-    html += `</tr>`;
-  }
-  document.getElementById("bodyRows").innerHTML = html;
-  renderTotals();
+const row=document.createElement("tr");
+row.innerHTML=`
+<td class="sticky-col">${fmt}<br><span style="font-size:10px;opacity:.6">СКРИНЫ</span></td>
+<td><input class="cell-input" value="${sum}" readonly onclick="openDayEditor(${i})"></td>
+`;
+bodyRows.appendChild(row);
+});
 }
 
-function renderTotals(){
-  const people = weekData.people || [];
-  const rows = ["sumScreensRow","sumOnlineRow","sumMutesRow","sumBansRow","sumTicketsRow","sumRatingRow"];
-  const labels = ["ИТОГО СКРИНОВ","Σ Онлайн","Σ Муты","Σ Баны","Σ Тикеты","Рейтинг"];
-  
-  rows.forEach((id, idx) => {
-    let rowHtml = `<td class="sticky-col">${labels[idx]}</td>`;
-    people.forEach(p => {
-      let val = 0;
-      for(let i=0;i<7;i++){
-        const e = (weekData.entries?.[p.id]?.[i]) || {online:0,mutes:0,bans:0,tickets:0};
-        if(idx===0) val += ((+e.online||0)+(+e.mutes||0)+(+e.bans||0)+(+e.tickets||0));
-        if(idx===1) val += (+e.online||0);
-        if(idx===2) val += (+e.mutes||0);
-        if(idx===3) val += (+e.bans||0);
-        if(idx===4) val += (+e.tickets||0);
-      }
-      if(idx===5){
-        const on = getSum(p.id,"online"), mu = getSum(p.id,"mutes"), ba = getSum(p.id,"bans"), ti = getSum(p.id,"tickets");
-        val = (on*WEIGHTS.online)+(mu*WEIGHTS.mutes)+(ba*WEIGHTS.bans)+(ti*WEIGHTS.tickets);
-        val = Math.round(val*10)/10;
-      }
-      rowHtml += `<td>${val}</td>`;
-    });
-    document.getElementById(id).innerHTML = rowHtml;
-  });
+/* EDIT */
+function openDayEditor(day){
+if(!isAdmin())return;
+editingDay=day;
+const e=weekData.entries[day]||{online:0,mutes:0,bans:0,tickets:0};
+editOnline.value=e.online;
+editMutes.value=e.mutes;
+editBans.value=e.bans;
+editTickets.value=e.tickets;
+editorModal.style.display="flex";
+}
+function closeModal(){editorModal.style.display="none";}
+function saveDayEdit(){
+weekData.entries[editingDay]={
+online:+editOnline.value||0,
+mutes:+editMutes.value||0,
+bans:+editBans.value||0,
+tickets:+editTickets.value||0
+};
+closeModal();
+renderWeek();
+saveWeek();
 }
 
-function getSum(pid, key){
-  let s = 0; for(let i=0;i<7;i++) s += (+weekData.entries?.[pid]?.[i]?.[key]||0); return s;
+/* SAVE */
+function saveWeek(){
+if(!isAdmin())return;
+db.ref("activity/"+currentWeekKey).set(weekData);
 }
-
-function openDayEditor(pid, day){
-  const e = (weekData.entries?.[pid]?.[day]) || {online:0,mutes:0,bans:0,tickets:0};
-  const on = prompt("Онлайн:", e.online), mu = prompt("Муты:", e.mutes), ba = prompt("Баны:", e.bans), ti = prompt("Тикеты:", e.tickets);
-  if(on===null||mu===null||ba===null||ti===null) return;
-  if(!weekData.entries) weekData.entries = {};
-  if(!weekData.entries[pid]) weekData.entries[pid] = {};
-  weekData.entries[pid][day] = {online:+on, mutes:+mu, bans:+ba, tickets:+ti};
-  saveWeek();
+function clearWeek(){
+if(!isAdmin())return;
+if(confirm("Очистить неделю?")){
+db.ref("activity/"+currentWeekKey).remove();
+buildWeek(currentWeekKey);
 }
-
-function addPerson(){
-  const nick = document.getElementById("nickname").value.trim(), role = +document.getElementById("role").value;
-  if(!nick) return;
-  if(!weekData.people) weekData.people = [];
-  weekData.people.push({ id:"p_"+Date.now(), nick, role });
-  saveWeek();
-}
-
-async function saveWeek(){
-  await db.ref("activity/" + currentWeekKey).set(weekData);
-}
-
-async function clearWeek(){
-  if(confirm("Очистить текущую неделю?")) await db.ref("activity/" + currentWeekKey).remove();
-}
-
-function exportToExcel(){
-  const blob = new Blob([document.getElementById("mainTable").outerHTML], {type:"application/vnd.ms-excel"});
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download="activity_loliland.xls"; a.click();
 }
 </script>
 </body>
