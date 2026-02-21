@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Activity System — LoliLand Edition</title>
+  <title>Activity System — LoliLand</title>
 
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
   <style>
@@ -38,7 +37,6 @@
       background: linear-gradient(90deg, rgba(124,58,237,.16), rgba(34,211,238,.10));
     }
     .title h2{margin:0; font-size:18px; letter-spacing:.4px;}
-    .title .sub{font-size:12px; color:rgba(230,236,255,.75);}
     .pill{
       display:inline-flex; align-items:center; gap:8px; padding:8px 12px;
       background: rgba(124,58,237,.14); border:1px solid rgba(124,58,237,.30);
@@ -58,11 +56,9 @@
       cursor:pointer; border:none; border-radius:10px; padding:10px 14px;
       font-weight:900; transition: transform .08s ease; display:inline-flex; align-items:center; gap:8px;
     }
-    button:active{ transform: translateY(1px); }
+    button:hover{ filter: brightness(1.1); }
     .btn-primary{ background: linear-gradient(90deg, var(--accent), #a78bfa); color:white; }
-    .btn-github{ background: #24292e; color: white; border: 1px solid #444; }
     .btn-success{ background: linear-gradient(90deg, var(--success), #34d399); color:#052016; }
-    .btn-warn{ background: linear-gradient(90deg, var(--warn), #fde68a); color:#2a2100; }
     .btn-danger{ background: linear-gradient(90deg, var(--danger), #fb7185); color:#2a040b; }
     .btn-ghost{ background: rgba(230,236,255,.06); border:1px solid rgba(230,236,255,.12); color: rgba(230,236,255,.9); }
     .spacer{ margin-left:auto; }
@@ -79,36 +75,24 @@
     .role-3{ background: linear-gradient(90deg, #38bdf8, #7dd3fc);}
     .role-2{ background: linear-gradient(90deg, #f97316, #fdba74);}
     .role-1{ background: linear-gradient(90deg, #14b8a6, #5eead4);}
-    .cell-input{ width:72px; background: rgba(230,236,255,.06); border:1px solid rgba(230,236,255,.10); color:var(--text); text-align:center; padding:7px 8px; border-radius:9px; font-weight:900; }
-    .muted{ color: rgba(230,236,255,.62); font-weight:700; }
+    .cell-input{ width:72px; background: rgba(230,236,255,.06); border:1px solid rgba(230,236,255,.10); color:var(--text); text-align:center; padding:7px 8px; border-radius:9px; font-weight:900; cursor: pointer;}
     .sum-row td{ background: rgba(6,8,18,.92) !important; color: var(--warn); font-weight:1000; }
     .sum-sub td{ background: rgba(6,8,18,.80) !important; color: rgba(230,236,255,.85); font-weight:900; }
-    body.role-viewer .admin-only{ display:none !important; }
-    body.role-viewer .cell-input{ pointer-events:none; opacity:.65; }
-    body.role-editor .super-only{ display:none !important; }
+    .note{ padding: 20px; display: flex; justify-content: space-between; align-items: center;}
   </style>
 </head>
 
-<body class="role-viewer">
+<body>
 <div class="wrap">
   <div class="card">
     <div class="header">
       <div class="title">
-        <h2 id="hdr">Учет активности состава — LoliLand</h2>
-        <div class="sub" id="who">Режим просмотра</div>
+        <h2>Учет активности состава — LoliLand</h2>
       </div>
       <div class="pill" id="weekPill">Неделя: —</div>
     </div>
 
-    <div class="toolbar" id="authBar">
-      <div id="loginArea">
-        <button class="btn-github" id="githubBtn" onclick="signIn()">🐱 Войти через GitHub</button>
-      </div>
-      <div class="spacer"></div>
-      <button class="btn-ghost" id="logoutBtn" style="display:none" onclick="signOut()">🚪 Выйти</button>
-    </div>
-
-    <div class="toolbar admin-only" id="mainBar">
+    <div class="toolbar">
       <div class="group">
         <label>Неделя (начало)</label>
         <input type="date" id="weekStart" onchange="selectWeekFromDate()">
@@ -133,8 +117,7 @@
       <button class="btn-primary" onclick="addPerson()">＋ Добавить</button>
       <button class="btn-success" onclick="saveWeek()">💾 Сохранить</button>
       <div class="spacer"></div>
-      <button class="btn-ghost super-only" onclick="openUsersPanel()">👑 Юзеры</button>
-      <button class="btn-danger super-only" onclick="clearWeek()">🗑 Очистить</button>
+      <button class="btn-danger" onclick="clearWeek()">🗑 Очистить</button>
     </div>
 
     <div class="table-wrap" id="tableWrap">
@@ -156,39 +139,8 @@
     </div>
 
     <div class="note">
-      <div class="muted">Рейтинг: Онлайн×1 + Муты×2 + Баны×3 + Тикеты×1.5</div>
+      <div style="color:rgba(230,236,255,.6)">Рейтинг: Онлайн×1 + Муты×2 + Баны×3 + Тикеты×1.5</div>
       <button class="btn-ghost" onclick="exportToExcel()">📥 Export XLS</button>
-    </div>
-  </div>
-</div>
-
-<div id="usersModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter: blur(6px); z-index:9999;">
-  <div style="max-width:980px; margin:40px auto; background:rgba(11,18,43,.95); border:1px solid rgba(27,42,85,.9); border-radius:16px; overflow:hidden;">
-    <div style="padding:16px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(27,42,85,.7);">
-      <div style="font-weight:1000;">👑 Управление пользователями</div>
-      <button class="btn-ghost" onclick="closeUsersPanel()">✖</button>
-    </div>
-    <div style="padding:16px 18px; display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
-      <div class="group"><label>UID</label><input id="u_uid"></div>
-      <div class="group"><label>Роль</label>
-        <select id="u_role">
-          <option value="8">Администратор (8)</option>
-          <option value="7">Старший Администратор (7)</option>
-          <option value="6">Младший Администратор (6)</option>
-          <option value="5">Старший Модератор (5)</option>
-          <option value="3">Младший Модератор (3)</option>
-          <option value="2">Старший Хелпер (2)</option>
-          <option value="1">Хелпер (1)</option>
-          <option value="0">Viewer (0)</option>
-        </select>
-      </div>
-      <button class="btn-primary" onclick="setUserRole()">✅ Применить</button>
-    </div>
-    <div style="padding:18px; max-height:400px; overflow:auto;">
-      <table style="width:100%">
-        <thead><tr><th>UID</th><th>Ник</th><th>Роль</th></tr></thead>
-        <tbody id="usersList"></tbody>
-      </table>
     </div>
   </div>
 </div>
@@ -196,69 +148,19 @@
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
-  authDomain: "aktiv-d4d72.firebaseapp.com",
   databaseURL: "https://aktiv-d4d72-default-rtdb.firebaseio.com",
   projectId: "aktiv-d4d72",
-  storageBucket: "aktiv-d4d72.firebasestorage.app",
-  messagingSenderId: "714513253285",
-  appId: "1:714513253285:web:c76d9fec18593db9a55e4c"
 };
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
 const db = firebase.database();
 
-const ROLE_NAMES = { 8:"Админ", 7:"Ст.Админ", 6:"Мл.Админ", 5:"Ст.Модер", 3:"Мл.Модер", 2:"Ст.Хелпер", 1:"Хелпер", 0:"Viewer" };
+const ROLE_NAMES = { 8:"Админ", 7:"Ст.Админ", 6:"Мл.Админ", 5:"Ст.Модер", 3:"Мл.Модер", 2:"Ст.Хелпер", 1:"Хелпер" };
 const WEIGHTS = { online: 1, mutes: 2, bans: 3, tickets: 1.5 };
 
-let currentUser = null, currentRole = 0, currentNick = "Гость", currentWeekKey = "", weekData = null, unsubWeek = null;
+let currentWeekKey = "", weekData = null, unsubWeek = null;
 
-const canEdit = () => currentRole >= 6;
-const canManageUsers = () => currentRole >= 7;
-
-function setBodyRoleClass(){
-  document.body.classList.remove("role-viewer","role-editor","role-super");
-  if(currentRole >= 7) document.body.classList.add("role-super");
-  else if(currentRole >= 6) document.body.classList.add("role-editor");
-  else document.body.classList.add("role-viewer");
-}
-
-/* AUTH GITHUB */
-async function signIn(){
-  const provider = new firebase.auth.GithubAuthProvider();
-  try { await auth.signInWithPopup(provider); } catch(e) { alert(e.message); }
-}
-async function signOut(){ await auth.signOut(); location.reload(); }
-
-auth.onAuthStateChanged(async (user)=>{
-  currentUser = user;
-  const loginBtn = document.getElementById("githubBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-
-  if(!user){
-    currentRole = 0;
-    document.getElementById("who").innerText = "Режим просмотра (Войдите через GitHub)";
-    loginBtn.style.display = "block";
-    logoutBtn.style.display = "none";
-  } else {
-    const snap = await db.ref("users/" + user.uid).get();
-    let prof = snap.exists() ? snap.val() : null;
-    if(!snap.exists()){
-      prof = { nickname: user.displayName || user.email || "User", role: 0, createdAt: Date.now() };
-      await db.ref("users/" + user.uid).set(prof);
-    }
-    currentRole = prof.role || 0;
-    currentNick = prof.nickname;
-    document.getElementById("who").innerText = `${currentNick} • ${ROLE_NAMES[currentRole]} • UID: ${user.uid}`;
-    loginBtn.style.display = "none";
-    logoutBtn.style.display = "block";
-  }
-  setBodyRoleClass();
-  loadWeeksList();
-  initDefaultWeek();
-});
-
-/* LOGIC */
-function initDefaultWeek(){
+/* INIT */
+function init(){
   const today = new Date();
   const monday = new Date(today);
   const day = (today.getDay() + 6) % 7;
@@ -266,15 +168,18 @@ function initDefaultWeek(){
   const iso = monday.toISOString().slice(0,10);
   document.getElementById("weekStart").value = iso;
   selectWeekFromDate();
+  loadWeeksList();
 }
+init();
 
 async function loadWeeksList(){
   const sel = document.getElementById("weekSelect");
-  sel.innerHTML = `<option value="">—</option>`;
-  const snap = await db.ref("activity").get();
-  if(!snap.exists()) return;
-  Object.keys(snap.val()).sort().reverse().forEach(k => {
-    const opt = document.createElement("option"); opt.value = k; opt.textContent = k; sel.appendChild(opt);
+  db.ref("activity").on("value", snap => {
+    sel.innerHTML = `<option value="">—</option>`;
+    if(!snap.exists()) return;
+    Object.keys(snap.val()).sort().reverse().forEach(k => {
+      const opt = document.createElement("option"); opt.value = k; opt.textContent = k; sel.appendChild(opt);
+    });
   });
 }
 
@@ -307,7 +212,7 @@ function buildDefaultWeek(weekKey){
     const d = new Date(base); d.setDate(base.getDate()+i);
     days.push(d.toISOString().slice(0,10));
   }
-  return { weekStart:weekKey, days, people:[], entries:{}, updatedAt:Date.now() };
+  return { weekStart:weekKey, days, people:[], entries:{} };
 }
 
 function renderWeek(){
@@ -326,7 +231,7 @@ function renderWeek(){
     people.forEach(p => {
       const e = (weekData.entries?.[p.id]?.[i]) || {online:0,mutes:0,bans:0,tickets:0};
       const sum = (e.online||0)+(e.mutes||0)+(e.bans||0)+(e.tickets||0);
-      html += `<td><input class="cell-input" type="number" value="${sum}" onclick="openDayEditor('${p.id}',${i})"></td>`;
+      html += `<td><input class="cell-input" type="text" readonly value="${sum}" onclick="openDayEditor('${p.id}',${i})"></td>`;
     });
     html += `</tr>`;
   }
@@ -345,11 +250,11 @@ function renderTotals(){
       let val = 0;
       for(let i=0;i<7;i++){
         const e = (weekData.entries?.[p.id]?.[i]) || {online:0,mutes:0,bans:0,tickets:0};
-        if(idx===0) val += (e.online+e.mutes+e.bans+e.tickets);
-        if(idx===1) val += (e.online||0);
-        if(idx===2) val += (e.mutes||0);
-        if(idx===3) val += (e.bans||0);
-        if(idx===4) val += (e.tickets||0);
+        if(idx===0) val += ((+e.online||0)+(+e.mutes||0)+(+e.bans||0)+(+e.tickets||0));
+        if(idx===1) val += (+e.online||0);
+        if(idx===2) val += (+e.mutes||0);
+        if(idx===3) val += (+e.bans||0);
+        if(idx===4) val += (+e.tickets||0);
       }
       if(idx===5){
         const on = getSum(p.id,"online"), mu = getSum(p.id,"mutes"), ba = getSum(p.id,"bans"), ti = getSum(p.id,"tickets");
@@ -363,55 +268,38 @@ function renderTotals(){
 }
 
 function getSum(pid, key){
-  let s = 0; for(let i=0;i<7;i++) s += (weekData.entries?.[pid]?.[i]?.[key]||0); return s;
+  let s = 0; for(let i=0;i<7;i++) s += (+weekData.entries?.[pid]?.[i]?.[key]||0); return s;
 }
 
 function openDayEditor(pid, day){
-  if(!canEdit()) return;
   const e = (weekData.entries?.[pid]?.[day]) || {online:0,mutes:0,bans:0,tickets:0};
   const on = prompt("Онлайн:", e.online), mu = prompt("Муты:", e.mutes), ba = prompt("Баны:", e.bans), ti = prompt("Тикеты:", e.tickets);
   if(on===null||mu===null||ba===null||ti===null) return;
+  if(!weekData.entries) weekData.entries = {};
   if(!weekData.entries[pid]) weekData.entries[pid] = {};
   weekData.entries[pid][day] = {online:+on, mutes:+mu, bans:+ba, tickets:+ti};
   saveWeek();
 }
 
-async function addPerson(){
-  if(!canEdit()) return;
+function addPerson(){
   const nick = document.getElementById("nickname").value.trim(), role = +document.getElementById("role").value;
   if(!nick) return;
+  if(!weekData.people) weekData.people = [];
   weekData.people.push({ id:"p_"+Date.now(), nick, role });
   saveWeek();
 }
 
 async function saveWeek(){
-  if(!canEdit()) return;
   await db.ref("activity/" + currentWeekKey).set(weekData);
 }
 
 async function clearWeek(){
-  if(!canManageUsers() || !confirm("Очистить?")) return;
-  await db.ref("activity/" + currentWeekKey).remove();
+  if(confirm("Очистить текущую неделю?")) await db.ref("activity/" + currentWeekKey).remove();
 }
 
 function exportToExcel(){
   const blob = new Blob([document.getElementById("mainTable").outerHTML], {type:"application/vnd.ms-excel"});
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download="activity.xls"; a.click();
-}
-
-/* USER MGMT */
-function openUsersPanel(){ if(canManageUsers()){ document.getElementById("usersModal").style.display="block"; refreshUsersList(); } }
-function closeUsersPanel(){ document.getElementById("usersModal").style.display="none"; }
-async function refreshUsersList(){
-  const snap = await db.ref("users").get();
-  if(!snap.exists()) return;
-  document.getElementById("usersList").innerHTML = Object.entries(snap.val()).map(([uid, u]) => 
-    `<tr><td>${uid}</td><td>${u.nickname}</td><td>${ROLE_NAMES[u.role]||u.role}</td></tr>`).join('');
-}
-async function setUserRole(){
-  const uid = document.getElementById("u_uid").value.trim(), role = +document.getElementById("u_role").value;
-  if(uid) await db.ref("users/"+uid).update({role});
-  refreshUsersList();
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download="activity_loliland.xls"; a.click();
 }
 </script>
 </body>
