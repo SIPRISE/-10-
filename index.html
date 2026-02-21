@@ -1,192 +1,4 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activity Dashboard Pro</title>
-    <style>
-        :root {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --border: #334155;
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --success: #10b981;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: radial-gradient(circle at top right, #1e293b, #0f172a);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container { max-width: 1400px; margin: 0 auto; }
-
-        h2 {
-            text-align: center;
-            font-size: 2rem;
-            background: linear-gradient(to right, #60a5fa, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 25px;
-        }
-
-        .card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-        }
-
-        .toolbar {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            background: rgba(15, 23, 42, 0.5);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            border: 1px solid var(--border);
-            align-items: flex-end;
-        }
-
-        .input-group { display: flex; flex-direction: column; gap: 8px; }
-        .input-group label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
-
-        input, select {
-            background: #0f172a;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px;
-            color: white;
-            outline: none;
-        }
-
-        button {
-            cursor: pointer;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .btn-add { background: var(--accent); color: white; }
-        .btn-save { background: #475569; color: white; }
-
-        .table-container {
-            overflow-x: auto;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            min-height: 200px;
-        }
-
-        table { border-collapse: separate; border-spacing: 0; width: 100%; background: #1e293b; }
-        th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
-
-        .sticky-col {
-            position: sticky;
-            left: 0;
-            background: #111827 !important;
-            z-index: 5;
-            min-width: 160px;
-            text-align: left;
-        }
-
-        .staff-col { min-width: 150px; background: rgba(255, 255, 255, 0.02); }
-
-        .cell-input {
-            width: 65px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid transparent;
-            text-align: center;
-            color: white;
-            border-radius: 4px;
-            padding: 5px;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 10px;
-            text-transform: uppercase;
-            font-weight: 800;
-            color: white;
-        }
-        .role-1{background:#14b8a6} .role-2{background:#f97316} .role-3{background:#38bdf8}
-        .role-4{background:#f59e0b} .role-5{background:#ef4444} .role-6{background:#a855f7}
-        .role-7{background:#3b82f6} .role-8{background: var(--success);} 
-
-        .sum-row { background: #0f172a !important; color: #facc15; font-weight: bold; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h2>Система учета активности</h2>
-
-    <div class="card">
-        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <select id="weekSelect" onchange="loadWeek()" style="flex-grow: 1;"></select>
-            <button class="btn-save" onclick="saveWeek()">💾 Сохранить текущую неделю</button>
-            <button class="btn-save" style="background:#ef4444" onclick="clearData()">🗑 Очистить всё</button>
-        </div>
-
-        <div class="toolbar">
-            <div class="input-group">
-                <label>Начало недели</label>
-                <input type="date" id="weekStart" onchange="generateWeek()">
-            </div>
-            <div class="input-group">
-                <label>Никнейм</label>
-                <input type="text" id="nickname" placeholder="Nickname">
-            </div>
-            <div class="input-group">
-                <label>Должность</label>
-                <select id="role" onchange="autoSalary()">
-                    <option value="1">Хелпер</option>
-                    <option value="2">Ст. Хелпер</option>
-                    <option value="3">Мл. Модератор</option>
-                    <option value="4">Модератор</option>
-                    <option value="5">Ст. Модератор</option>
-                    <option value="6">Мл. Администратор</option>
-                    <option value="7">Старший Администратор</option>
-                    <option value="8">Администратор</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>З/П в час</label>
-                <input type="number" id="salary" value="70">
-            </div>
-            <button class="btn-add" onclick="addPerson()">＋ Добавить сотрудника</button>
-        </div>
-
-        <div class="table-container" id="mainTable">
-            <table id="activityTable">
-                <thead>
-                    <tr id="roleRow"><th class="sticky-col">Должность</th></tr>
-                    <tr id="nickRow"><th class="sticky-col">Никнейм</th></tr>
-                    <tr id="salaryRow"><th class="sticky-col">Ставка ($/ч)</th></tr>
-                </thead>
-                <tbody id="bodyRows"></tbody>
-                <tfoot>
-                    <tr class="sum-row" id="sumRow"><td class="sticky-col">ИТОГО СКРИНШОТОВ</td></tr>
-                </tfoot>
-            </table>
-        </div>
-    </div>
-</div>
-
-<script>
-    let peopleCount = 0;
+let peopleCount = 0;
     const salaries = { 1:70, 2:90, 3:110, 4:115, 5:130, 6:180, 7:215, 8:180 };
 
     function autoSalary() {
@@ -217,8 +29,9 @@
             body.appendChild(tr);
         });
         
-        // Сброс счетчика людей при новой генерации недели, если нужно
-        // peopleCount = 0; 
+        peopleCount = 0; // Сбрасываем счетчик для новой структуры
+        // Очищаем заголовки сотрудников при новой генерации недели
+        document.querySelectorAll('.staff-col').forEach(el => el.remove());
     }
 
     function addPerson() {
@@ -227,16 +40,16 @@
         const sal = document.getElementById("salary").value;
         if (!nick) return alert("Введите ник!");
 
-        document.getElementById("roleRow").innerHTML += `<th class="staff-col"><span class="badge role-${role.value}">${role.selectedOptions[0].text}</span></th>`;
-        document.getElementById("nickRow").innerHTML += `<th class="staff-col">${nick}</th>`;
-        document.getElementById("salaryRow").innerHTML += `<th class="staff-col" style="color:var(--success)">${sal}</th>`;
+        document.getElementById("roleRow").insertAdjacentHTML('beforeend', `<th class="staff-col"><span class="badge role-${role.value}">${role.selectedOptions[0].text}</span></th>`);
+        document.getElementById("nickRow").insertAdjacentHTML('beforeend', `<th class="staff-col">${nick}</th>`);
+        document.getElementById("salaryRow").insertAdjacentHTML('beforeend', `<th class="staff-col" style="color:var(--success)">${sal}</th>`);
 
         const rows = document.getElementById("bodyRows").children;
         for (let row of rows) {
-            row.innerHTML += `<td class="staff-col"><input type="number" value="0" class="cell-input col-${peopleCount}" oninput="calculate()"></td>`;
+            row.insertAdjacentHTML('beforeend', `<td class="staff-col"><input type="number" value="0" class="cell-input col-${peopleCount}" oninput="calculate()"></td>`);
         }
 
-        document.getElementById("sumRow").innerHTML += `<td class="staff-col" id="sum-${peopleCount}">0</td>`;
+        document.getElementById("sumRow").insertAdjacentHTML('beforeend', `<td class="staff-col" id="sum-${peopleCount}">0</td>`);
         peopleCount++;
         document.getElementById("nickname").value = "";
     }
@@ -244,30 +57,38 @@
     function calculate() {
         for (let i = 0; i < peopleCount; i++) {
             let sum = 0;
-            document.querySelectorAll(`.col-${i}`).forEach(inp => sum += (parseInt(inp.value) || 0));
+            document.querySelectorAll(`.col-${i}`).forEach(inp => {
+                sum += (parseInt(inp.value) || 0);
+                // Важно: записываем значение в атрибут для сохранения через innerHTML
+                inp.setAttribute('value', inp.value); 
+            });
             const cell = document.getElementById(`sum-${i}`);
             if (cell) cell.textContent = sum;
         }
     }
 
-    // СОХРАНЕНИЕ
     function saveWeek() {
         const name = prompt("Название сохранения (например, 'Неделя 1'):");
         if (!name) return;
+        
+        // Перед сохранением обновляем все атрибуты value
+        document.querySelectorAll('.cell-input').forEach(inp => inp.setAttribute('value', inp.value));
+
         const data = { 
             html: document.getElementById("mainTable").innerHTML, 
             count: peopleCount 
         };
         localStorage.setItem("week_" + name, JSON.stringify(data));
-        localStorage.setItem("last_week", name); // Запоминаем последнюю
+        localStorage.setItem("last_week", name);
         loadWeeksList();
-        alert("Сохранено!");
+        alert("Сохранено локально в этом браузере!");
     }
 
     function loadWeeksList() {
         const select = document.getElementById("weekSelect");
         select.innerHTML = '<option value="">📁 Загрузить сохранение...</option>';
-        for (let key in localStorage) {
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
             if (key.startsWith("week_")) {
                 const opt = document.createElement("option");
                 opt.value = key;
@@ -284,7 +105,6 @@
         if (stored) {
             document.getElementById("mainTable").innerHTML = stored.html;
             peopleCount = stored.count;
-            // Важно: после вставки HTML нужно заново "оживить" инпуты
             rebindInputs();
         }
     }
@@ -296,23 +116,16 @@
     }
 
     function clearData() {
-        if(confirm("Удалить ВСЕ сохранения?")) {
+        if(confirm("Удалить ВСЕ сохранения из этого браузера?")) {
             localStorage.clear();
             location.reload();
         }
     }
 
-    // При загрузке страницы:
     window.onload = () => {
         loadWeeksList();
         const last = localStorage.getItem("last_week");
-        if (last) {
-            loadWeek("week_" + last);
-        }
+        if (last) loadWeek("week_" + last);
     };
 
     autoSalary();
-</script>
-
-</body>
-</html>
