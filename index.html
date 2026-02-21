@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Панель учета активности</title>
+
+<style>
+:root{
+    --bg:#0f172a;
+    --card:#1e293b;
+    --border:#334155;
+    --text:#e2e8f0;
+    --accent:#3b82f6;
+}
+
+body{
+    margin:0;
+    font-family:Segoe UI;
+    background:var(--bg);
+    color:var(--text);
+}
+
+.container{
+    max-width:1400px;
+    margin:30px auto;
+    padding:20px;
+}
+
+.card{
+    background:var(--card);
+    border-radius:14px;
+    padding:25px;
+    box-shadow:0 0 40px rgba(0,0,0,0.4);
+}
+
+h2{ text-align:center; }
+
+.controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.controls input, .controls select{
+    padding:8px;
+    border-radius:6px;
+    border:1px solid var(--border);
+    background:#111827;
+    color:white;
+}
+
+.controls button{
+    background:var(--accent);
+    border:none;
+    padding:8px 14px;
+    border-radius:6px;
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+table{
+    border-collapse:collapse;
+    width:100%;
+    min-width:1000px;
+}
+
+th, td{
+    border:1px solid var(--border);
+    padding:6px;
+    text-align:center;
+}
+
+th{ background:#1e293b; }
+
+input[type="number"]{
+    width:70px;
+    background:transparent;
+    border:none;
+    color:white;
+    text-align:center;
+}
+
+.badge{
+    padding:4px 8px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+    color:white;
+}
+
+/* Цвета ролей */
+.role-1{background:#14b8a6;} /* Хелпер */
+.role-2{background:#f97316;} /* Ст. Хелпер */
+.role-3{background:#38bdf8;} /* Мл. Модер */
+.role-4{background:#f59e0b;} /* Модер */
+.role-5{background:#ef4444;} /* Ст. Модер */
+.role-6{background:#a855f7;} /* Мл. Админ */
+.role-7{background:#3b82f6;} /* Ст. Админ */
+
+.sum-row{
+    background:#1f2937;
+    font-weight:bold;
+    color:#facc15;
+}
+
+.week-switch{
+    margin-bottom:15px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<div class="card">
+
+<h2>Система учета активности</h2>
+
+<div class="week-switch">
+    <select id="weekSelect" onchange="loadWeek()"></select>
+    <button onclick="saveWeek()">Сохранить неделю</button>
+</div>
+
+<div class="controls">
+    <input type="date" id="weekStart" onchange="generateWeek()">
+    <input type="text" id="nickname" placeholder="Ник">
+    <select id="role" onchange="autoSalary()">
+        <option value="1">Хелпер</option>
+        <option value="2">Ст. Хелпер</option>
+        <option value="3">Мл. Модератор</option>
+        <option value="4">Модератор</option>
+        <option value="5">Ст. Модератор</option>
+        <option value="6">Мл. Администратор</option>
+        <option value="7">Старший Администратор</option>
+    </select>
+    <input type="number" id="salary" placeholder="З/П в час">
+    <button onclick="addPerson()">Добавить</button>
+</div>
+
+<div style="overflow-x:auto;">
+<table id="activityTable">
+<thead>
+<tr id="roleRow"><th>Должность</th></tr>
+<tr id="nickRow"><th>Ник</th></tr>
+<tr id="salaryRow"><th>З/П</th></tr>
+</thead>
+<tbody id="bodyRows"></tbody>
+<tfoot>
+<tr class="sum-row" id="sumRow">
+<td>ИТОГОВОЕ КОЛ-ВО СКРИНШОТОВ</td>
+</tr>
+</tfoot>
+</table>
+</div>
+
+</div>
+</div>
+
+<script>
+
+let peopleCount=0;
+let days=7;
+const salaries={
+1:70,
+2:90,
+3:110,
+4:115,
+5:130,
+6:180,
+7:215
+};
+
+function autoSalary(){
+    const role=document.getElementById("role").value;
+    document.getElementById("salary").value=salaries[role];
+}
+
+function generateWeek(){
+    const start=document.getElementById("weekStart").value;
+    if(!start) return;
+    const body=document.getElementById("bodyRows");
+    body.innerHTML="";
+    const date=new Date(start);
+
+    for(let i=0;i<7;i++){
+        const d=new Date(date);
+        d.setDate(date.getDate()+i);
+        const formatted=d.toISOString().split("T")[0];
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${formatted}</td>`;
+        body.appendChild(tr);
+    }
+
+    addStatRow("Онлайн");
+    addStatRow("Муты");
+    addStatRow("Баны");
+    addStatRow("Тикеты");
+}
+
+function addStatRow(name){
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${name}</td>`;
+    document.getElementById("bodyRows").appendChild(tr);
+}
+
+function addPerson(){
+    const nick=document.getElementById("nickname").value;
+    const role=document.getElementById("role");
+    const salary=document.getElementById("salary").value;
+    if(!nick||!salary) return alert("Заполни поля");
+
+    document.getElementById("roleRow").innerHTML+=
+    `<th><span class="badge role-${role.value}">${role.selectedOptions[0].text}</span></th>`;
+
+    document.getElementById("nickRow").innerHTML+=`<th>${nick}</th>`;
+    document.getElementById("salaryRow").innerHTML+=`<th>${salary}</th>`;
+
+    Array.from(document.getElementById("bodyRows").children).forEach(row=>{
+        row.innerHTML+=`<td><input type="number" value="0" class="col-${peopleCount}" oninput="calculate()"></td>`;
+    });
+
+    document.getElementById("sumRow").innerHTML+=`<td id="sum-${peopleCount}">0</td>`;
+    peopleCount++;
+}
+
+function calculate(){
+    for(let i=0;i<peopleCount;i++){
+        let sum=0;
+        document.querySelectorAll(`.col-${i}`).forEach(inp=>{
+            sum+=parseInt(inp.value)||0;
+        });
+        const cell=document.getElementById(`sum-${i}`);
+        if(cell) cell.textContent=sum;
+    }
+}
+
+/* Сохранение недель */
+
+function saveWeek(){
+    const name=prompt("Название недели:");
+    if(!name) return;
+    localStorage.setItem("week_"+name,document.querySelector(".card").innerHTML);
+    loadWeeks();
+}
+
+function loadWeeks(){
+    const select=document.getElementById("weekSelect");
+    select.innerHTML="";
+    for(let key in localStorage){
+        if(key.startsWith("week_")){
+            select.innerHTML+=`<option value="${key}">${key.replace("week_","")}</option>`;
+        }
+    }
+}
+
+function loadWeek(){
+    const key=document.getElementById("weekSelect").value;
+    if(localStorage.getItem(key)){
+        document.querySelector(".card").innerHTML=localStorage.getItem(key);
+        loadWeeks();
+    }
+}
+
+loadWeeks();
+
+
+
+</script>
+</body>
+</html>
