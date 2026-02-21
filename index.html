@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>ROOT Admin Panel - 10Aktiv</title>
+    <title>Screen Counter - SIPRISE Edition</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -27,12 +27,11 @@
         .cell-input { width: 65px; background: rgba(255,255,255,0.05); border: 1px solid transparent; color: white; text-align: center; padding: 6px; border-radius: 4px; }
         
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; text-transform: uppercase; font-weight: 800; color: white; }
-        .role-1 { background: #14b8a6; } .role-2 { background: #f97316; } .role-3 { background: #38bdf8; } 
-        .role-6 { background: #a855f7; } .role-8 { background: var(--accent); } .role-7 { background: var(--success); }
+        .role-7 { background: var(--success); } .role-8 { background: var(--accent); } .role-1 { background: #14b8a6; }
         
-        .sum-row { background: #0f172a !important; color: #facc15; font-weight: bold; }
+        .sum-row { background: #0f172a !important; color: #facc15; font-weight: bold; font-size: 1.1em; }
         
-        /* Админ-логика */
+        /* Логика админа */
         .admin-only { display: none; }
         body.is-admin .admin-only { display: flex !important; }
         body.not-admin .cell-input { pointer-events: none; background: transparent; border: none; }
@@ -42,7 +41,7 @@
 <body class="not-admin">
 
 <div class="card">
-    <h2 id="header">Учет активности состава</h2>
+    <h2 id="header">Система учета скринов</h2>
 
     <div class="toolbar admin-only">
         <div class="input-group">
@@ -58,14 +57,11 @@
             <select id="role">
                 <option value="7">Старший Администратор</option>
                 <option value="8">Администратор</option>
-                <option value="6">Мл. Администратор</option>
-                <option value="3">Мл. Модератор</option>
-                <option value="2">Ст. Хелпер</option>
                 <option value="1">Хелпер</option>
             </select>
         </div>
-        <button class="btn-add" onclick="addPerson()">＋ Добавить</button>
-        <button class="btn-clear" onclick="clearData()">🗑 Сброс базы</button>
+        <button class="btn-add" onclick="addPerson()">＋ Добавить сотрудника</button>
+        <button class="btn-clear" onclick="clearData()">🗑 Очистить таблицу</button>
     </div>
 
     <div class="table-container" id="tableWrapper">
@@ -76,13 +72,14 @@
             </thead>
             <tbody id="bodyRows"></tbody>
             <tfoot>
-                <tr class="sum-row" id="sumRow"><td class="sticky-col">ИТОГО (З/П)</td></tr>
+                <tr class="sum-row" id="sumRow"><td class="sticky-col">ИТОГО СКРИНОВ</td></tr>
             </tfoot>
         </table>
     </div>
 </div>
 
 <script>
+    // ТВОЙ FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
         authDomain: "aktiv-d4d72.firebaseapp.com",
@@ -95,17 +92,16 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const salaries = { 1:70, 2:90, 3:110, 6:180, 8:180, 7:215 };
 
-    // --- ПРОВЕРКА СОЗДАТЕЛЯ ---
+    // ПРОВЕРКА СОЗДАТЕЛЯ
     const OWNER = "SIPRISE";
-    let login = prompt("Введите ваш никнейм:");
+    let login = prompt("Введите ваш никнейм для доступа:");
     if (login && login.toUpperCase() === OWNER.toUpperCase()) {
         document.body.classList.replace('not-admin', 'is-admin');
-        document.getElementById('header').innerText += " [ROOT ACCESS]";
+        document.getElementById('header').innerText += " [Управление]";
     }
 
-    db.ref('ultra_final_v4').on('value', (snapshot) => {
+    db.ref('screen_counter_v1').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
             document.getElementById('tableWrapper').innerHTML = data.html;
@@ -134,18 +130,17 @@
     function addPerson() {
         const nick = document.getElementById("nickname").value;
         const roleSel = document.getElementById("role");
-        const rVal = roleSel.value;
         if (!nick) return;
 
         const id = "c" + Date.now();
-        document.getElementById("roleRow").innerHTML += `<td><span class="badge role-${rVal}">${roleSel.selectedOptions[0].text}</span></td>`;
+        document.getElementById("roleRow").innerHTML += `<td><span class="badge role-${roleSel.value}">${roleSel.selectedOptions[0].text}</span></td>`;
         document.getElementById("nickRow").innerHTML += `<td style="font-weight:bold">${nick}</td>`;
 
         const rows = document.getElementById("bodyRows").children;
         for (let row of rows) {
-            row.innerHTML += `<td><input type="number" value="0" class="cell-input ${id}" data-role="${rVal}" oninput="calculate()"></td>`;
+            row.innerHTML += `<td><input type="number" value="0" class="cell-input ${id}" oninput="calculate()"></td>`;
         }
-        document.getElementById("sumRow").innerHTML += `<td id="sum_${id}" style="color:#facc15">0 $</td>`;
+        document.getElementById("sumRow").innerHTML += `<td id="sum_${id}">0</td>`;
         save();
     }
 
@@ -153,13 +148,13 @@
         const nickRow = document.getElementById("nickRow");
         const columns = nickRow.cells.length - 1;
         for(let i = 1; i <= columns; i++) {
-            const firstInput = document.getElementById("bodyRows").rows[0].cells[i].querySelector('input');
-            const idClass = firstInput.classList[1];
-            const inputs = document.querySelectorAll('.' + idClass);
+            const bodyRow = document.getElementById("bodyRows").rows[0];
+            if (!bodyRow) continue;
+            const inputClass = bodyRow.cells[i].querySelector('input').classList[1];
+            const inputs = document.querySelectorAll('.' + inputClass);
             let total = 0;
             inputs.forEach(inp => total += (parseInt(inp.value) || 0));
-            const sal = salaries[firstInput.getAttribute('data-role')] || 0;
-            document.getElementById("sum_" + idClass).innerText = (total * sal).toLocaleString() + " $";
+            document.getElementById("sum_" + inputClass).innerText = total;
         }
         save();
     }
@@ -167,7 +162,7 @@
     function save() {
         if (!document.body.classList.contains('is-admin')) return;
         document.querySelectorAll('.cell-input').forEach(i => i.setAttribute('value', i.value));
-        db.ref('ultra_final_v4').set({
+        db.ref('screen_counter_v1').set({
             html: document.getElementById('tableWrapper').innerHTML,
             date: document.getElementById('weekStart').value
         });
@@ -178,7 +173,7 @@
     }
 
     function clearData() {
-        if(confirm("Удалить всё?")) db.ref('ultra_final_v4').remove();
+        if(confirm("Удалить всё?")) db.ref('screen_counter_v1').remove();
     }
 </script>
 </body>
