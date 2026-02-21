@@ -277,7 +277,7 @@
         select.innerHTML = '<option value="">📁 Загрузить сохранение...</option>';
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            if (key.startsWith("week_")) {
+            if (key && key.startsWith("week_")) {
                 const opt = document.createElement("option");
                 opt.value = key;
                 opt.textContent = key.replace("week_", "");
@@ -289,8 +289,9 @@
     function loadWeek(specificKey = null) {
         const key = specificKey || document.getElementById("weekSelect").value;
         if (!key) return;
-        const stored = JSON.parse(localStorage.getItem(key));
-        if (stored) {
+        const storedData = localStorage.getItem(key);
+        if (storedData) {
+            const stored = JSON.parse(storedData);
             document.getElementById("mainTable").innerHTML = stored.html;
             peopleCount = stored.count;
             rebindInputs();
