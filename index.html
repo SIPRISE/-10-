@@ -2,40 +2,65 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Activity System FIX</title>
+    <title>Activity Cloud System PRO</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --border: #334155; --text: #f1f5f9; --accent: #3b82f6; --success: #10b981; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; margin: 0; }
-        .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; max-width: 1200px; margin: 0 auto; }
-        .toolbar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; }
-        input, select { background: #0f172a; color: white; border: 1px solid var(--border); padding: 8px; border-radius: 6px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #1e293b; }
-        th, td { border: 1px solid var(--border); padding: 10px; text-align: center; min-width: 100px; }
-        .sticky-col { position: sticky; left: 0; background: #111827; z-index: 2; text-align: left; }
-        .cell-input { width: 60px; background: rgba(0,0,0,0.3); border: none; color: white; text-align: center; padding: 5px; border-radius: 4px; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .role-7 { background: var(--success); } .role-8 { background: var(--accent); } .role-1 { background: #14b8a6; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; max-width: 1400px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .toolbar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border: 1px solid var(--border); align-items: flex-end; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { font-size: 11px; color: var(--accent); font-weight: bold; }
+        input, select { background: #0f172a; color: white; border: 1px solid var(--border); padding: 8px; border-radius: 6px; outline: none; }
+        button { cursor: pointer; border: none; border-radius: 6px; padding: 10px 18px; font-weight: 600; transition: 0.2s; }
+        .btn-add { background: var(--accent); color: white; }
+        .btn-clear { background: #ef4444; color: white; margin-left: auto; }
+        
+        .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; background: #1e293b; }
+        th, td { border: 1px solid var(--border); padding: 10px; text-align: center; min-width: 110px; }
+        .sticky-col { position: sticky; left: 0; background: #111827; z-index: 5; text-align: left; font-weight: bold; border-right: 2px solid var(--border); }
+        .cell-input { width: 65px; background: rgba(255,255,255,0.05); border: 1px solid transparent; color: white; text-align: center; padding: 5px; border-radius: 4px; }
+        .cell-input:focus { border-color: var(--accent); background: rgba(0,0,0,0.5); }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: white; }
+        .role-1 {background:#14b8a6} .role-2 {background:#f97316} .role-3 {background:#38bdf8} 
+        .role-6 {background:#a855f7} .role-8 {background:var(--accent)} .role-7 {background:var(--success)}
+        
+        .sum-row { background: #0f172a !important; color: #facc15; font-weight: bold; }
         body.viewer .admin-only { display: none !important; }
-        body.viewer .cell-input { pointer-events: none; background: transparent; }
+        body.viewer .cell-input { pointer-events: none; background: transparent; border: none; }
+        body.viewer input::-webkit-outer-spin-button, body.viewer input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body class="viewer">
 
 <div class="card">
-    <h2 style="text-align:center">Учет активности состава</h2>
+    <h2 style="text-align:center; margin-bottom: 20px;">Система учета активности состава</h2>
     
     <div class="toolbar admin-only">
-        <input type="date" id="weekStart" onchange="generateRows()">
-        <input type="text" id="nickname" placeholder="Никнейм">
-        <select id="role">
-            <option value="1">Хелпер</option>
-            <option value="8">Администратор</option>
-            <option value="7">Старший Администратор</option>
-        </select>
-        <button onclick="addPerson()" style="background:var(--accent); color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer;">Добавить</button>
-        <button onclick="clearData()" style="background:#ef4444; color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer;">Сброс</button>
+        <div class="input-group">
+            <label>Начало недели</label>
+            <input type="date" id="weekStart" onchange="generateRows()">
+        </div>
+        <div class="input-group">
+            <label>Никнейм</label>
+            <input type="text" id="nickname" placeholder="Nickname">
+        </div>
+        <div class="input-group">
+            <label>Должность</label>
+            <select id="role">
+                <option value="1">Хелпер</option>
+                <option value="2">Ст. Хелпер</option>
+                <option value="3">Мл. Модератор</option>
+                <option value="6">Мл. Администратор</option>
+                <option value="8">Администратор</option>
+                <option value="7">Старший Администратор</option>
+            </select>
+        </div>
+        <button class="btn-add" onclick="addPerson()">＋ Добавить сотрудника</button>
+        <button class="btn-clear" onclick="clearData()">🗑 Сброс всей базы</button>
     </div>
 
     <div id="tableWrapper">
@@ -45,11 +70,15 @@
                 <tr id="nickRow"><th class="sticky-col">Никнейм</th></tr>
             </thead>
             <tbody id="bodyRows"></tbody>
+            <tfoot>
+                <tr class="sum-row" id="sumRow"><td class="sticky-col">ИТОГО (З/П)</td></tr>
+            </tfoot>
         </table>
     </div>
 </div>
 
 <script>
+    // ТВОЙ FIREBASE CONFIG
     const firebaseConfig = {
         apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
         authDomain: "aktiv-d4d72.firebaseapp.com",
@@ -63,13 +92,16 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Проверка прав
+    // Зарплаты
+    const salaries = { 1:70, 2:90, 3:110, 6:180, 8:180, 7:215 };
+
+    // Проверка на админа
     if (new URLSearchParams(window.location.search).get('admin') === 'true') {
         document.body.classList.remove('viewer');
     }
 
-    // Загрузка
-    db.ref('shared_table').on('value', (snapshot) => {
+    // Загрузка из облака
+    db.ref('shared_table_v2').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
             document.getElementById('tableWrapper').innerHTML = data.html;
@@ -83,33 +115,58 @@
         if (!start) return;
         const body = document.getElementById("bodyRows");
         const date = new Date(start);
-        let rowsHtml = "";
+        let html = "";
 
         for (let i = 0; i < 7; i++) {
             const d = new Date(date);
             d.setDate(date.getDate() + i);
             const fmt = d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' });
-            rowsHtml += `<tr><td class="sticky-col">${fmt}</td></tr>`;
+            html += `<tr><td class="sticky-col" style="color:var(--accent)">${fmt}</td></tr>`;
         }
         ["📊 Онлайн", "🚫 Муты", "🔨 Баны", "📩 Тикеты"].forEach(s => {
-            rowsHtml += `<tr><td class="sticky-col" style="color:#94a3b8">${s}</td></tr>`;
+            html += `<tr><td class="sticky-col" style="color:#94a3b8; font-style:italic; font-weight:normal">${s}</td></tr>`;
         });
-        body.innerHTML = rowsHtml;
+        body.innerHTML = html;
         sync();
     }
 
     function addPerson() {
         const nick = document.getElementById("nickname").value;
-        const role = document.getElementById("role");
-        if (!nick) return;
+        const roleSelect = document.getElementById("role");
+        const roleVal = roleSelect.value;
+        if (!nick) return alert("Введите ник!");
 
         const id = "c" + Date.now();
-        document.getElementById("roleRow").innerHTML += `<td><span class="badge role-${role.value}">${role.selectedOptions[0].text}</span></td>`;
-        document.getElementById("nickRow").innerHTML += `<td>${nick}</td>`;
+        document.getElementById("roleRow").innerHTML += `<td><span class="badge role-${roleVal}">${roleSelect.selectedOptions[0].text}</span></td>`;
+        document.getElementById("nickRow").innerHTML += `<td style="font-weight:bold">${nick}</td>`;
 
         const rows = document.getElementById("bodyRows").children;
         for (let row of rows) {
-            row.innerHTML += `<td><input type="number" value="0" class="cell-input ${id}" oninput="sync()"></td>`;
+            row.innerHTML += `<td><input type="number" value="0" class="cell-input ${id}" data-role="${roleVal}" oninput="calculate()"></td>`;
+        }
+        document.getElementById("sumRow").innerHTML += `<td id="sum_${id}" style="color:#facc15">0</td>`;
+        
+        document.getElementById("nickname").value = "";
+        calculate();
+    }
+
+    function calculate() {
+        const sumRow = document.getElementById("sumRow");
+        const columns = document.getElementById("nickRow").cells.length - 1;
+        
+        const nickCells = document.getElementById("nickRow").cells;
+        for(let i = 1; i <= columns; i++) {
+            const inputClass = document.getElementById("bodyRows").rows[0].cells[i].querySelector('input').classList[1];
+            const inputs = document.querySelectorAll('.' + inputClass);
+            let totalActivity = 0;
+            inputs.forEach(inp => totalActivity += (parseInt(inp.value) || 0));
+            
+            const role = inputs[0].getAttribute('data-role');
+            const salaryPerUnit = salaries[role] || 0;
+            const finalSalary = totalActivity * salaryPerUnit;
+            
+            const sumCell = document.getElementById("sum_" + inputClass);
+            if(sumCell) sumCell.innerText = finalSalary.toLocaleString() + " $";
         }
         sync();
     }
@@ -117,18 +174,18 @@
     function sync() {
         if (document.body.classList.contains('viewer')) return;
         document.querySelectorAll('.cell-input').forEach(i => i.setAttribute('value', i.value));
-        db.ref('shared_table').set({
+        db.ref('shared_table_v2').set({
             html: document.getElementById('tableWrapper').innerHTML,
             date: document.getElementById('weekStart').value
         });
     }
 
     function rebind() {
-        document.querySelectorAll('.cell-input').forEach(i => i.oninput = sync);
+        document.querySelectorAll('.cell-input').forEach(i => i.oninput = calculate);
     }
 
     function clearData() {
-        if(confirm("Удалить всё?")) db.ref('shared_table').remove();
+        if(confirm("Удалить ВСЮ таблицу?")) db.ref('shared_table_v2').remove();
     }
 </script>
 </body>
