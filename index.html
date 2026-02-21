@@ -5,30 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Activity System — LoliLand Edition</title>
 
-  <!-- Firebase compat (как у тебя) -->
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
   <style>
     :root{
-      --bg:#060812;
-      --bg2:#0a1026;
-      --card:#0b122b;
-      --card2:#0a1638;
-      --border:#1b2a55;
-      --text:#e6ecff;
-
-      --accent:#7c3aed;   /* LoliLand purple */
-      --accent2:#22d3ee;  /* neon cyan */
-      --success:#10b981;
-      --warn:#facc15;
-      --danger:#ef4444;
-
+      --bg:#060812; --bg2:#0a1026; --card:#0b122b; --card2:#0a1638;
+      --border:#1b2a55; --text:#e6ecff; --accent:#7c3aed; --accent2:#22d3ee;
+      --success:#10b981; --warn:#facc15; --danger:#ef4444;
       --shadow: 0 18px 60px rgba(0,0,0,.55);
       --glow: 0 0 0 1px rgba(124,58,237,.25), 0 0 38px rgba(124,58,237,.25);
     }
-
     *{box-sizing:border-box}
     body{
       margin:0; padding:22px;
@@ -36,255 +24,100 @@
                   radial-gradient(1000px 700px at 85% 20%, rgba(34,211,238,.18), transparent 55%),
                   linear-gradient(180deg, var(--bg), var(--bg2));
       color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue";
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
-
     .wrap{max-width:1600px; margin:0 auto;}
     .card{
       background: linear-gradient(180deg, rgba(11,18,43,.92), rgba(8,14,36,.92));
-      border:1px solid rgba(27,42,85,.9);
-      border-radius:18px;
-      box-shadow: var(--shadow);
-      overflow:hidden;
+      border:1px solid rgba(27,42,85,.9); border-radius:18px;
+      box-shadow: var(--shadow); overflow:hidden;
     }
-
     .header{
-      padding:18px 20px;
-      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding:18px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px;
       border-bottom:1px solid rgba(27,42,85,.8);
       background: linear-gradient(90deg, rgba(124,58,237,.16), rgba(34,211,238,.10));
     }
-
-    .title{
-      display:flex; flex-direction:column; gap:4px;
-    }
-    .title h2{
-      margin:0;
-      font-size:18px;
-      letter-spacing:.4px;
-    }
-    .title .sub{
-      font-size:12px;
-      color:rgba(230,236,255,.75);
-    }
-
+    .title h2{margin:0; font-size:18px; letter-spacing:.4px;}
+    .title .sub{font-size:12px; color:rgba(230,236,255,.75);}
     .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 12px;
-      background: rgba(124,58,237,.14);
-      border:1px solid rgba(124,58,237,.30);
-      border-radius:999px;
-      box-shadow: var(--glow);
-      font-size:12px;
-      white-space:nowrap;
+      display:inline-flex; align-items:center; gap:8px; padding:8px 12px;
+      background: rgba(124,58,237,.14); border:1px solid rgba(124,58,237,.30);
+      border-radius:999px; box-shadow: var(--glow); font-size:12px;
     }
-
     .toolbar{
-      display:flex; flex-wrap:wrap; gap:12px;
-      padding:16px 18px;
-      border-bottom:1px solid rgba(27,42,85,.7);
-      background: rgba(6,8,18,.35);
-      align-items:flex-end;
+      display:flex; flex-wrap:wrap; gap:12px; padding:16px 18px;
+      border-bottom:1px solid rgba(27,42,85,.7); background: rgba(6,8,18,.35); align-items:flex-end;
     }
-
     .group{display:flex; flex-direction:column; gap:6px;}
-    .group label{
-      font-size:11px; font-weight:900;
-      letter-spacing:.6px;
-      color: rgba(34,211,238,.95);
-      text-transform:uppercase;
-    }
+    .group label{font-size:11px; font-weight:900; color: rgba(34,211,238,.95); text-transform:uppercase;}
     input, select{
-      min-height:40px;
-      background: rgba(10,16,38,.9);
-      color: var(--text);
-      border:1px solid rgba(27,42,85,.9);
-      border-radius:10px;
-      padding:10px 12px;
-      outline:none;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
+      min-height:40px; background: rgba(10,16,38,.9); color: var(--text);
+      border:1px solid rgba(27,42,85,.9); border-radius:10px; padding:10px 12px; outline:none;
     }
-    input:focus, select:focus{
-      border-color: rgba(34,211,238,.85);
-      box-shadow: 0 0 0 3px rgba(34,211,238,.12);
-    }
-
     button{
-      cursor:pointer;
-      border:none;
-      border-radius:10px;
-      padding:10px 14px;
-      font-weight:900;
-      letter-spacing:.2px;
-      transition: transform .08s ease, filter .15s ease, opacity .15s ease;
-      min-height:40px;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      user-select:none;
+      cursor:pointer; border:none; border-radius:10px; padding:10px 14px;
+      font-weight:900; transition: transform .08s ease; display:inline-flex; align-items:center; gap:8px;
     }
     button:active{ transform: translateY(1px); }
     .btn-primary{ background: linear-gradient(90deg, var(--accent), #a78bfa); color:white; }
+    .btn-github{ background: #24292e; color: white; border: 1px solid #444; }
     .btn-success{ background: linear-gradient(90deg, var(--success), #34d399); color:#052016; }
     .btn-warn{ background: linear-gradient(90deg, var(--warn), #fde68a); color:#2a2100; }
     .btn-danger{ background: linear-gradient(90deg, var(--danger), #fb7185); color:#2a040b; }
-    .btn-ghost{
-      background: rgba(230,236,255,.06);
-      border:1px solid rgba(230,236,255,.12);
-      color: rgba(230,236,255,.9);
-    }
+    .btn-ghost{ background: rgba(230,236,255,.06); border:1px solid rgba(230,236,255,.12); color: rgba(230,236,255,.9); }
     .spacer{ margin-left:auto; }
-
-    .table-wrap{
-      overflow:auto;
-      border-top:1px solid rgba(27,42,85,.65);
-    }
-
-    table{
-      width:100%;
-      border-collapse:collapse;
-      min-width:1200px;
-      background: rgba(10,16,38,.55);
-    }
-    th, td{
-      border:1px solid rgba(27,42,85,.7);
-      padding:12px;
-      text-align:center;
-      min-width:120px;
-      font-size:13px;
-    }
-    thead th{
-      position:sticky;
-      top:0;
-      z-index:7;
-      background: rgba(11,18,43,.95);
-      backdrop-filter: blur(10px);
-    }
-
-    .sticky-col{
-      position:sticky;
-      left:0;
-      z-index:8;
-      text-align:left;
-      font-weight:900;
-      background: rgba(6,8,18,.92);
-    }
-
-    .badge{
-      padding:5px 10px;
-      border-radius:10px;
-      font-size:11px;
-      text-transform:uppercase;
-      font-weight:1000;
-      color:white;
-      display:inline-block;
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow: 0 0 0 1px rgba(0,0,0,.22);
-      white-space:nowrap;
-    }
-    /* роли */
-    .role-8{ background: linear-gradient(90deg, #2563eb, #60a5fa);} /* Админ */
-    .role-7{ background: linear-gradient(90deg, #10b981, #34d399);} /* Ст. Админ */
-    .role-6{ background: linear-gradient(90deg, #a855f7, #c4b5fd);} /* Мл. Админ */
-    .role-5{ background: linear-gradient(90deg, #ec4899, #f9a8d4);} /* Ст. Модер */
-    .role-3{ background: linear-gradient(90deg, #38bdf8, #7dd3fc);} /* Мл. Модер */
-    .role-2{ background: linear-gradient(90deg, #f97316, #fdba74);} /* Ст. Хелпер */
-    .role-1{ background: linear-gradient(90deg, #14b8a6, #5eead4);} /* Хелпер */
-
-    .cell-input{
-      width:72px;
-      background: rgba(230,236,255,.06);
-      border:1px solid rgba(230,236,255,.10);
-      color:var(--text);
-      text-align:center;
-      padding:7px 8px;
-      border-radius:9px;
-      font-weight:900;
-    }
-
+    .table-wrap{ overflow:auto; border-top:1px solid rgba(27,42,85,.65); }
+    table{ width:100%; border-collapse:collapse; min-width:1200px; background: rgba(10,16,38,.55); }
+    th, td{ border:1px solid rgba(27,42,85,.7); padding:12px; text-align:center; font-size:13px; }
+    thead th{ position:sticky; top:0; z-index:7; background: rgba(11,18,43,.95); backdrop-filter: blur(10px); }
+    .sticky-col{ position:sticky; left:0; z-index:8; text-align:left; font-weight:900; background: rgba(6,8,18,.92); }
+    .badge{ padding:5px 10px; border-radius:10px; font-size:11px; text-transform:uppercase; font-weight:1000; color:white; border:1px solid rgba(255,255,255,.12); }
+    .role-8{ background: linear-gradient(90deg, #2563eb, #60a5fa);}
+    .role-7{ background: linear-gradient(90deg, #10b981, #34d399);}
+    .role-6{ background: linear-gradient(90deg, #a855f7, #c4b5fd);}
+    .role-5{ background: linear-gradient(90deg, #ec4899, #f9a8d4);}
+    .role-3{ background: linear-gradient(90deg, #38bdf8, #7dd3fc);}
+    .role-2{ background: linear-gradient(90deg, #f97316, #fdba74);}
+    .role-1{ background: linear-gradient(90deg, #14b8a6, #5eead4);}
+    .cell-input{ width:72px; background: rgba(230,236,255,.06); border:1px solid rgba(230,236,255,.10); color:var(--text); text-align:center; padding:7px 8px; border-radius:9px; font-weight:900; }
     .muted{ color: rgba(230,236,255,.62); font-weight:700; }
-    .sum-row td{
-      background: rgba(6,8,18,.92) !important;
-      color: var(--warn);
-      font-weight:1000;
-    }
-    .sum-sub td{
-      background: rgba(6,8,18,.80) !important;
-      color: rgba(230,236,255,.85);
-      font-weight:900;
-    }
-
-    .right{
-      text-align:right;
-    }
-    .note{
-      padding:14px 18px;
-      border-top:1px solid rgba(27,42,85,.65);
-      color: rgba(230,236,255,.68);
-      font-size:12px;
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      background: rgba(6,8,18,.32);
-    }
-
-    /* скрытие админ-инструментов */
+    .sum-row td{ background: rgba(6,8,18,.92) !important; color: var(--warn); font-weight:1000; }
+    .sum-sub td{ background: rgba(6,8,18,.80) !important; color: rgba(230,236,255,.85); font-weight:900; }
     body.role-viewer .admin-only{ display:none !important; }
     body.role-viewer .cell-input{ pointer-events:none; opacity:.65; }
     body.role-editor .super-only{ display:none !important; }
-    .danger-text{ color: #fb7185; font-weight:900; }
   </style>
 </head>
 
 <body class="role-viewer">
 <div class="wrap">
   <div class="card">
-
     <div class="header">
       <div class="title">
         <h2 id="hdr">Учет активности состава — LoliLand</h2>
-        <div class="sub" id="who">Не авторизован</div>
+        <div class="sub" id="who">Режим просмотра</div>
       </div>
       <div class="pill" id="weekPill">Неделя: —</div>
     </div>
 
-    <!-- AUTH BAR -->
     <div class="toolbar" id="authBar">
-      <div class="group">
-        <label>Email</label>
-        <input id="email" type="email" placeholder="name@domain.com" autocomplete="username">
+      <div id="loginArea">
+        <button class="btn-github" id="githubBtn" onclick="signIn()">🐱 Войти через GitHub</button>
       </div>
-      <div class="group">
-        <label>Пароль</label>
-        <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password">
-      </div>
-      <button class="btn-primary" onclick="signIn()">🔐 Войти</button>
-      <button class="btn-ghost" onclick="signUp()">🧾 Регистрация</button>
       <div class="spacer"></div>
-      <button class="btn-ghost" onclick="signOut()">🚪 Выйти</button>
+      <button class="btn-ghost" id="logoutBtn" style="display:none" onclick="signOut()">🚪 Выйти</button>
     </div>
 
-    <!-- MAIN TOOLBAR -->
     <div class="toolbar admin-only" id="mainBar">
       <div class="group">
         <label>Неделя (начало)</label>
         <input type="date" id="weekStart" onchange="selectWeekFromDate()">
       </div>
-
       <div class="group">
         <label>Архив недель</label>
-        <select id="weekSelect" onchange="loadSelectedWeek()">
-          <option value="">—</option>
-        </select>
+        <select id="weekSelect" onchange="loadSelectedWeek()"><option value="">—</option></select>
       </div>
-
-      <div class="group">
-        <label>Никнейм</label>
-        <input type="text" id="nickname" placeholder="Nickname">
-      </div>
-
+      <div class="group"><label>Никнейм</label><input type="text" id="nickname" placeholder="Nickname"></div>
       <div class="group">
         <label>Должность</label>
         <select id="role">
@@ -297,15 +130,11 @@
           <option value="1">Хелпер</option>
         </select>
       </div>
-
       <button class="btn-primary" onclick="addPerson()">＋ Добавить</button>
       <button class="btn-success" onclick="saveWeek()">💾 Сохранить</button>
-      <button class="btn-warn" onclick="exportToExcel()">📥 Export</button>
-
       <div class="spacer"></div>
-
-      <button class="btn-ghost super-only" onclick="openUsersPanel()">👑 Пользователи</button>
-      <button class="btn-danger super-only" onclick="clearWeek()">🗑 Очистить неделю</button>
+      <button class="btn-ghost super-only" onclick="openUsersPanel()">👑 Юзеры</button>
+      <button class="btn-danger super-only" onclick="clearWeek()">🗑 Очистить</button>
     </div>
 
     <div class="table-wrap" id="tableWrap">
@@ -315,8 +144,6 @@
           <tr id="nickRow"><th class="sticky-col">Никнейм</th></tr>
         </thead>
         <tbody id="bodyRows"></tbody>
-
-        <!-- итоги по скринам -->
         <tfoot>
           <tr class="sum-row" id="sumScreensRow"><td class="sticky-col">ИТОГО СКРИНОВ (7 дней)</td></tr>
           <tr class="sum-sub" id="sumOnlineRow"><td class="sticky-col">Σ Онлайн</td></tr>
@@ -329,34 +156,21 @@
     </div>
 
     <div class="note">
-      <div>
-        <span class="muted">Рейтинг:</span>
-        <span class="muted">Онлайн×1 + Муты×2 + Баны×3 + Тикеты×1.5</span>
-      </div>
-      <div class="muted">Все изменения логируются (для ролей ≥ Мл.Админ).</div>
+      <div class="muted">Рейтинг: Онлайн×1 + Муты×2 + Баны×3 + Тикеты×1.5</div>
+      <button class="btn-ghost" onclick="exportToExcel()">📥 Export XLS</button>
     </div>
   </div>
 </div>
 
-<!-- USERS PANEL (простая модалка) -->
 <div id="usersModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter: blur(6px); z-index:9999;">
-  <div style="max-width:980px; margin:40px auto; background:rgba(11,18,43,.95); border:1px solid rgba(27,42,85,.9); border-radius:16px; box-shadow: var(--shadow); overflow:hidden;">
+  <div style="max-width:980px; margin:40px auto; background:rgba(11,18,43,.95); border:1px solid rgba(27,42,85,.9); border-radius:16px; overflow:hidden;">
     <div style="padding:16px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(27,42,85,.7);">
       <div style="font-weight:1000;">👑 Управление пользователями</div>
-      <button class="btn-ghost" onclick="closeUsersPanel()">✖ Закрыть</button>
+      <button class="btn-ghost" onclick="closeUsersPanel()">✖</button>
     </div>
-
     <div style="padding:16px 18px; display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
-      <div class="group">
-        <label>UID</label>
-        <input id="u_uid" placeholder="uid пользователя">
-      </div>
-      <div class="group">
-        <label>Ник</label>
-        <input id="u_nick" placeholder="ник в системе">
-      </div>
-      <div class="group">
-        <label>Роль</label>
+      <div class="group"><label>UID</label><input id="u_uid"></div>
+      <div class="group"><label>Роль</label>
         <select id="u_role">
           <option value="8">Администратор (8)</option>
           <option value="7">Старший Администратор (7)</option>
@@ -369,35 +183,17 @@
         </select>
       </div>
       <button class="btn-primary" onclick="setUserRole()">✅ Применить</button>
-
-      <div class="spacer"></div>
-      <div class="muted">
-        Важно: пользователь сначала должен сам зарегистрироваться/войти, чтобы у него появился UID.
-      </div>
     </div>
-
-    <div style="padding:0 18px 18px 18px;">
-      <div class="muted" style="margin-bottom:10px;">Список пользователей (roles):</div>
-      <div style="overflow:auto; border:1px solid rgba(27,42,85,.7); border-radius:12px;">
-        <table style="width:100%; border-collapse:collapse; min-width:760px;">
-          <thead>
-            <tr>
-              <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(27,42,85,.7);">UID</th>
-              <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(27,42,85,.7);">Ник</th>
-              <th style="text-align:center; padding:10px; border-bottom:1px solid rgba(27,42,85,.7);">Роль</th>
-            </tr>
-          </thead>
-          <tbody id="usersList"></tbody>
-        </table>
-      </div>
+    <div style="padding:18px; max-height:400px; overflow:auto;">
+      <table style="width:100%">
+        <thead><tr><th>UID</th><th>Ник</th><th>Роль</th></tr></thead>
+        <tbody id="usersList"></tbody>
+      </table>
     </div>
   </div>
 </div>
 
 <script>
-/* =========================
-   FIREBASE INIT
-========================= */
 const firebaseConfig = {
   apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
   authDomain: "aktiv-d4d72.firebaseapp.com",
@@ -411,48 +207,14 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
-/* =========================
-   CONSTANTS / HELPERS
-========================= */
-const ROLE_NAMES = {
-  8: "Администратор",
-  7: "Старший Администратор",
-  6: "Младший Администратор",
-  5: "Старший Модератор",
-  3: "Младший Модератор",
-  2: "Старший Хелпер",
-  1: "Хелпер",
-  0: "Viewer"
-};
-const ROLE_BADGE_CLASS = (role) => `role-${role}`;
-
+const ROLE_NAMES = { 8:"Админ", 7:"Ст.Админ", 6:"Мл.Админ", 5:"Ст.Модер", 3:"Мл.Модер", 2:"Ст.Хелпер", 1:"Хелпер", 0:"Viewer" };
 const WEIGHTS = { online: 1, mutes: 2, bans: 3, tickets: 1.5 };
 
-// state
-let currentUser = null;
-let currentRole = 0;
-let currentNick = "—";
+let currentUser = null, currentRole = 0, currentNick = "Гость", currentWeekKey = "", weekData = null, unsubWeek = null;
 
-let currentWeekKey = "";      // e.g. 2026-02-19
-let weekData = null;          // structured
-let unsubWeek = null;
+const canEdit = () => currentRole >= 6;
+const canManageUsers = () => currentRole >= 7;
 
-function weekKeyFromDate(dateStr){
-  // dateStr = YYYY-MM-DD
-  return dateStr || "";
-}
-function formatWeekPill(dateStr){
-  if(!dateStr) return "Неделя: —";
-  const d = new Date(dateStr + "T00:00:00");
-  const ru = d.toLocaleDateString("ru-RU",{year:"numeric",month:"2-digit",day:"2-digit"});
-  return `Неделя: ${ru}`;
-}
-function canEdit(){
-  return currentRole >= 6; // Мл.Админ+
-}
-function canManageUsers(){
-  return currentRole >= 7; // Ст.Админ+
-}
 function setBodyRoleClass(){
   document.body.classList.remove("role-viewer","role-editor","role-super");
   if(currentRole >= 7) document.body.classList.add("role-super");
@@ -460,496 +222,197 @@ function setBodyRoleClass(){
   else document.body.classList.add("role-viewer");
 }
 
-/* =========================
-   AUTH
-========================= */
+/* AUTH GITHUB */
 async function signIn(){
-  const email = document.getElementById("email").value.trim();
-  const pass  = document.getElementById("pass").value;
-  if(!email || !pass) return alert("Введи email и пароль.");
-  try{
-    await auth.signInWithEmailAndPassword(email, pass);
-  }catch(e){
-    alert("Ошибка входа: " + e.message);
-  }
+  const provider = new firebase.auth.GithubAuthProvider();
+  try { await auth.signInWithPopup(provider); } catch(e) { alert(e.message); }
 }
-
-async function signUp(){
-  const email = document.getElementById("email").value.trim();
-  const pass  = document.getElementById("pass").value;
-  if(!email || !pass) return alert("Введи email и пароль.");
-  try{
-    await auth.createUserWithEmailAndPassword(email, pass);
-    alert("Аккаунт создан. Теперь попроси Ст.Админа выдать роль (иначе будет Viewer).");
-  }catch(e){
-    alert("Ошибка регистрации: " + e.message);
-  }
-}
-
-async function signOut(){
-  await auth.signOut();
-}
+async function signOut(){ await auth.signOut(); location.reload(); }
 
 auth.onAuthStateChanged(async (user)=>{
   currentUser = user;
+  const loginBtn = document.getElementById("githubBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+
   if(!user){
     currentRole = 0;
-    currentNick = "—";
-    document.getElementById("who").innerHTML = `<span class="danger-text">Не авторизован</span>`;
-    document.getElementById("weekPill").innerText = "Неделя: —";
-    setBodyRoleClass();
-    renderEmptyTable();
-    stopWeekSub();
-    return;
+    document.getElementById("who").innerText = "Режим просмотра (Войдите через GitHub)";
+    loginBtn.style.display = "block";
+    logoutBtn.style.display = "none";
+  } else {
+    const snap = await db.ref("users/" + user.uid).get();
+    let prof = snap.exists() ? snap.val() : null;
+    if(!snap.exists()){
+      prof = { nickname: user.displayName || user.email || "User", role: 0, createdAt: Date.now() };
+      await db.ref("users/" + user.uid).set(prof);
+    }
+    currentRole = prof.role || 0;
+    currentNick = prof.nickname;
+    document.getElementById("who").innerText = `${currentNick} • ${ROLE_NAMES[currentRole]} • UID: ${user.uid}`;
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "block";
   }
-
-  // load profile
-  const snap = await db.ref("users/" + user.uid).get();
-  const prof = snap.exists() ? snap.val() : null;
-  currentRole = prof?.role ?? 0;
-  currentNick = prof?.nickname ?? user.email ?? "User";
-
-  document.getElementById("who").innerText = `${currentNick} • ${ROLE_NAMES[currentRole] ?? "—"} • UID: ${user.uid}`;
   setBodyRoleClass();
+  loadWeeksList();
+  initDefaultWeek();
+});
 
-  // ensure user node exists
-  if(!snap.exists()){
-    await db.ref("users/" + user.uid).set({ nickname: currentNick, role: 0, createdAt: Date.now() });
-  }
-
-  await loadWeeksList();
-  // auto-select current week by Monday? (берём текущую дату)
+/* LOGIC */
+function initDefaultWeek(){
   const today = new Date();
   const monday = new Date(today);
-  const day = (today.getDay() + 6) % 7; // Mon=0
+  const day = (today.getDay() + 6) % 7;
   monday.setDate(today.getDate() - day);
   const iso = monday.toISOString().slice(0,10);
   document.getElementById("weekStart").value = iso;
   selectWeekFromDate();
-});
+}
 
-/* =========================
-   WEEKS LIST (ARCHIVE)
-========================= */
 async function loadWeeksList(){
   const sel = document.getElementById("weekSelect");
   sel.innerHTML = `<option value="">—</option>`;
   const snap = await db.ref("activity").get();
   if(!snap.exists()) return;
-  const keys = Object.keys(snap.val()).sort().reverse();
-  for(const k of keys){
-    const opt = document.createElement("option");
-    opt.value = k;
-    opt.textContent = k;
-    sel.appendChild(opt);
-  }
+  Object.keys(snap.val()).sort().reverse().forEach(k => {
+    const opt = document.createElement("option"); opt.value = k; opt.textContent = k; sel.appendChild(opt);
+  });
+}
+
+function selectWeekFromDate(){
+  const k = document.getElementById("weekStart").value;
+  if(!k) return;
+  currentWeekKey = k;
+  document.getElementById("weekPill").innerText = "Неделя: " + k;
+  subscribeWeek(k);
 }
 
 function loadSelectedWeek(){
   const k = document.getElementById("weekSelect").value;
-  if(!k) return;
-  document.getElementById("weekStart").value = k;
-  selectWeekFromDate();
-}
-
-function selectWeekFromDate(){
-  const dateStr = document.getElementById("weekStart").value;
-  const k = weekKeyFromDate(dateStr);
-  if(!k) return;
-  currentWeekKey = k;
-  document.getElementById("weekPill").innerText = formatWeekPill(k);
-  subscribeWeek(k);
-}
-
-/* =========================
-   DATA MODEL (STRUCTURED)
-========================= */
-/*
-activity/{weekKey} = {
-  weekStart: "YYYY-MM-DD",
-  people: [{id, nick, role}],
-  days: [ "YYYY-MM-DD"...7 ],
-  metrics: ["online","mutes","bans","tickets"],
-  entries: { [personId]: { [dayIndex]: {online,mutes,bans,tickets} } },
-  updatedAt
-}
-logs/{weekKey}/{push} = { ts, uid, nick, action, payload }
-*/
-
-function buildDefaultWeek(weekKey){
-  const base = new Date(weekKey + "T00:00:00");
-  const days = [];
-  for(let i=0;i<7;i++){
-    const d = new Date(base);
-    d.setDate(base.getDate()+i);
-    days.push(d.toISOString().slice(0,10));
-  }
-  return {
-    weekStart: weekKey,
-    days,
-    metrics: ["online","mutes","bans","tickets"],
-    people: [],
-    entries: {},
-    updatedAt: Date.now()
-  };
-}
-
-function stopWeekSub(){
-  if(unsubWeek){
-    unsubWeek.off();
-    unsubWeek = null;
-  }
+  if(k){ document.getElementById("weekStart").value = k; selectWeekFromDate(); }
 }
 
 function subscribeWeek(weekKey){
-  stopWeekSub();
-  const ref = db.ref("activity/" + weekKey);
-  unsubWeek = ref;
-
-  ref.on("value", (snap)=>{
+  if(unsubWeek) unsubWeek.off();
+  unsubWeek = db.ref("activity/" + weekKey);
+  unsubWeek.on("value", (snap)=>{
     weekData = snap.exists() ? snap.val() : buildDefaultWeek(weekKey);
     renderWeek();
   });
 }
 
-/* =========================
-   RENDER TABLE
-========================= */
-function renderEmptyTable(){
-  document.getElementById("roleRow").innerHTML = `<th class="sticky-col">Должность</th>`;
-  document.getElementById("nickRow").innerHTML = `<th class="sticky-col">Никнейм</th>`;
-  document.getElementById("bodyRows").innerHTML = "";
-  ["sumScreensRow","sumOnlineRow","sumMutesRow","sumBansRow","sumTicketsRow","sumRatingRow"].forEach(id=>{
-    document.getElementById(id).innerHTML = `<td class="sticky-col">${document.getElementById(id).cells?.[0]?.innerText || ""}</td>`;
-  });
+function buildDefaultWeek(weekKey){
+  const days = [];
+  const base = new Date(weekKey + "T00:00:00");
+  for(let i=0;i<7;i++){
+    const d = new Date(base); d.setDate(base.getDate()+i);
+    days.push(d.toISOString().slice(0,10));
+  }
+  return { weekStart:weekKey, days, people:[], entries:{}, updatedAt:Date.now() };
 }
 
 function renderWeek(){
   if(!weekData) return;
   const people = weekData.people || [];
   const days = weekData.days || [];
-  const body = document.getElementById("bodyRows");
+  
+  document.getElementById("roleRow").innerHTML = `<th class="sticky-col">Должность</th>` + people.map(p => `<th><span class="badge role-${p.role}">${ROLE_NAMES[p.role]}</span></th>`).join('');
+  document.getElementById("nickRow").innerHTML = `<th class="sticky-col">Никнейм</th>` + people.map(p => `<th>${p.nick}</th>`).join('');
 
-  // header rows
-  const roleRow = document.getElementById("roleRow");
-  const nickRow = document.getElementById("nickRow");
-  roleRow.innerHTML = `<th class="sticky-col">Должность</th>`;
-  nickRow.innerHTML = `<th class="sticky-col">Никнейм</th>`;
-
-  for(const p of people){
-    roleRow.innerHTML += `<th><span class="badge ${ROLE_BADGE_CLASS(p.role)}">${ROLE_NAMES[p.role] ?? p.role}</span></th>`;
-    nickRow.innerHTML += `<th title="${escapeHtml(p.nick)}">${escapeHtml(p.nick)}</th>`;
-  }
-
-  // rows: 7 дней + 4 метрики
   let html = "";
-
-  // 7 days (for "screens" total we count sum of all metrics? НЕТ: как в твоём — только числа за день (скрины) -> делаем суммой всех 4 метрик за день)
-  for(let i=0;i<7;i++){
+  for(let i=0; i<7; i++){
     const d = new Date(days[i] + "T00:00:00");
-    const fmt = d.toLocaleDateString("ru-RU",{weekday:"short",day:"2-digit",month:"2-digit"});
-    html += `<tr><td class="sticky-col" style="color: rgba(34,211,238,.95)">${fmt}</td>`;
-    for(const p of people){
-      const cell = getEntry(p.id, i);
-      const dayScreens = (cell.online||0)+(cell.mutes||0)+(cell.bans||0)+(cell.tickets||0);
-      html += `<td>${renderInput(p.id, i, "screens", dayScreens, true)}</td>`;
-    }
+    const fmt = d.toLocaleDateString("ru-RU",{weekday:"short",day:"2-digit"});
+    html += `<tr><td class="sticky-col" style="color:#22d3ee">${fmt}</td>`;
+    people.forEach(p => {
+      const e = (weekData.entries?.[p.id]?.[i]) || {online:0,mutes:0,bans:0,tickets:0};
+      const sum = (e.online||0)+(e.mutes||0)+(e.bans||0)+(e.tickets||0);
+      html += `<td><input class="cell-input" type="number" value="${sum}" onclick="openDayEditor('${p.id}',${i})"></td>`;
+    });
     html += `</tr>`;
   }
-
-  // metrics rows
-  const metricRows = [
-    {key:"online", label:"📊 Онлайн"},
-    {key:"mutes", label:"🚫 Муты"},
-    {key:"bans", label:"🔨 Баны"},
-    {key:"tickets", label:"📩 Тикеты"}
-  ];
-
-  for(const m of metricRows){
-    html += `<tr><td class="sticky-col" style="color:rgba(230,236,255,.65)">${m.label}</td>`;
-    for(const p of people){
-      const sum = sumMetric(p.id, m.key);
-      html += `<td class="muted">${sum}</td>`;
-    }
-    html += `</tr>`;
-  }
-
-  body.innerHTML = html;
-
-  // totals footer
+  document.getElementById("bodyRows").innerHTML = html;
   renderTotals();
-
-  // lock inputs for viewers
-  if(canEdit()){
-    bindScreensInputs();
-  }
 }
 
 function renderTotals(){
   const people = weekData.people || [];
-
-  const sumScreensRow = document.getElementById("sumScreensRow");
-  const sumOnlineRow  = document.getElementById("sumOnlineRow");
-  const sumMutesRow   = document.getElementById("sumMutesRow");
-  const sumBansRow    = document.getElementById("sumBansRow");
-  const sumTicketsRow = document.getElementById("sumTicketsRow");
-  const sumRatingRow  = document.getElementById("sumRatingRow");
-
-  sumScreensRow.innerHTML = `<td class="sticky-col">ИТОГО СКРИНОВ (7 дней)</td>`;
-  sumOnlineRow.innerHTML  = `<td class="sticky-col">Σ Онлайн</td>`;
-  sumMutesRow.innerHTML   = `<td class="sticky-col">Σ Муты</td>`;
-  sumBansRow.innerHTML    = `<td class="sticky-col">Σ Баны</td>`;
-  sumTicketsRow.innerHTML = `<td class="sticky-col">Σ Тикеты</td>`;
-  sumRatingRow.innerHTML  = `<td class="sticky-col">Рейтинг</td>`;
-
-  for(const p of people){
-    const online = sumMetric(p.id,"online");
-    const mutes = sumMetric(p.id,"mutes");
-    const bans = sumMetric(p.id,"bans");
-    const tickets = sumMetric(p.id,"tickets");
-    const screens = online+mutes+bans+tickets; // суммарные скрины недели
-    const rating = (online*WEIGHTS.online) + (mutes*WEIGHTS.mutes) + (bans*WEIGHTS.bans) + (tickets*WEIGHTS.tickets);
-
-    sumScreensRow.innerHTML += `<td>${screens}</td>`;
-    sumOnlineRow.innerHTML  += `<td>${online}</td>`;
-    sumMutesRow.innerHTML   += `<td>${mutes}</td>`;
-    sumBansRow.innerHTML    += `<td>${bans}</td>`;
-    sumTicketsRow.innerHTML += `<td>${tickets}</td>`;
-    sumRatingRow.innerHTML  += `<td><b>${round1(rating)}</b></td>`;
-  }
+  const rows = ["sumScreensRow","sumOnlineRow","sumMutesRow","sumBansRow","sumTicketsRow","sumRatingRow"];
+  const labels = ["ИТОГО СКРИНОВ","Σ Онлайн","Σ Муты","Σ Баны","Σ Тикеты","Рейтинг"];
+  
+  rows.forEach((id, idx) => {
+    let rowHtml = `<td class="sticky-col">${labels[idx]}</td>`;
+    people.forEach(p => {
+      let val = 0;
+      for(let i=0;i<7;i++){
+        const e = (weekData.entries?.[p.id]?.[i]) || {online:0,mutes:0,bans:0,tickets:0};
+        if(idx===0) val += (e.online+e.mutes+e.bans+e.tickets);
+        if(idx===1) val += (e.online||0);
+        if(idx===2) val += (e.mutes||0);
+        if(idx===3) val += (e.bans||0);
+        if(idx===4) val += (e.tickets||0);
+      }
+      if(idx===5){
+        const on = getSum(p.id,"online"), mu = getSum(p.id,"mutes"), ba = getSum(p.id,"bans"), ti = getSum(p.id,"tickets");
+        val = (on*WEIGHTS.online)+(mu*WEIGHTS.mutes)+(ba*WEIGHTS.bans)+(ti*WEIGHTS.tickets);
+        val = Math.round(val*10)/10;
+      }
+      rowHtml += `<td>${val}</td>`;
+    });
+    document.getElementById(id).innerHTML = rowHtml;
+  });
 }
 
-function round1(x){ return Math.round(x*10)/10; }
-
-function escapeHtml(s){
-  return (s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+function getSum(pid, key){
+  let s = 0; for(let i=0;i<7;i++) s += (weekData.entries?.[pid]?.[i]?.[key]||0); return s;
 }
 
-/* =========================
-   SCREEN INPUTS (EDIT DAYS)
-   Вводим "скрины" за день одним числом,
-   а потом распределяем по метрикам через быстрый попап? (слишком сложно)
-   Поэтому делаем проще:
-   - На каждом дне вводится ОБЩЕЕ число скринов
-   - При вводе: сохраняем в entries[dayIndex].screens
-   - И отдельно сохраняем breakdown online/mutes/bans/tickets через отдельную форму? (не просили)
-   ----
-   Но ты просил автоподсчёт мутов/банов отдельно.
-   Значит: надо хранить реальные online/mutes/bans/tickets по дням.
-   Поэтому делаем так:
-   - кликаешь на "скрины" дня -> открывается мини-редактор 4 чисел
-========================= */
-
-function renderInput(pid, dayIndex, type, value, isDayScreens){
-  const disabled = canEdit() ? "" : "disabled";
-  // input хранит только total, но по клику открываем editor
-  return `<input ${disabled} class="cell-input" type="number" min="0" value="${value||0}"
-          data-pid="${pid}" data-day="${dayIndex}" onclick="openDayEditor(event)"
-          onkeydown="if(event.key==='Enter'){this.blur();}">`;
-}
-
-function bindScreensInputs(){
-  // nothing additional now; click handler inline
-}
-
-function getEntry(pid, dayIndex){
-  const e = weekData.entries?.[pid]?.[dayIndex];
-  return e ? {online:+e.online||0, mutes:+e.mutes||0, bans:+e.bans||0, tickets:+e.tickets||0} : {online:0,mutes:0,bans:0,tickets:0};
-}
-
-function sumMetric(pid, key){
-  let sum = 0;
-  for(let i=0;i<7;i++){
-    sum += (getEntry(pid,i)[key]||0);
-  }
-  return sum;
-}
-
-/* =========================
-   DAY EDITOR (4 поля)
-========================= */
-function openDayEditor(ev){
+function openDayEditor(pid, day){
   if(!canEdit()) return;
-  const inp = ev.target;
-  const pid = inp.dataset.pid;
-  const day = +inp.dataset.day;
-
-  const current = getEntry(pid, day);
-
-  const online = prompt("Онлайн за день:", current.online);
-  if(online === null) return;
-
-  const mutes = prompt("Муты за день:", current.mutes);
-  if(mutes === null) return;
-
-  const bans = prompt("Баны за день:", current.bans);
-  if(bans === null) return;
-
-  const tickets = prompt("Тикеты за день:", current.tickets);
-  if(tickets === null) return;
-
-  const next = {
-    online: Math.max(0, parseInt(online)||0),
-    mutes: Math.max(0, parseInt(mutes)||0),
-    bans: Math.max(0, parseInt(bans)||0),
-    tickets: Math.max(0, parseInt(tickets)||0)
-  };
-
-  // set and save
-  setEntry(pid, day, next);
-}
-
-function setEntry(pid, dayIndex, obj){
-  if(!weekData.entries) weekData.entries = {};
+  const e = (weekData.entries?.[pid]?.[day]) || {online:0,mutes:0,bans:0,tickets:0};
+  const on = prompt("Онлайн:", e.online), mu = prompt("Муты:", e.mutes), ba = prompt("Баны:", e.bans), ti = prompt("Тикеты:", e.tickets);
+  if(on===null||mu===null||ba===null||ti===null) return;
   if(!weekData.entries[pid]) weekData.entries[pid] = {};
-  weekData.entries[pid][dayIndex] = obj;
-  weekData.updatedAt = Date.now();
-
-  // optimistic render
-  renderWeek();
-
-  // log + save
-  logAction("setEntry", { pid, dayIndex, obj });
+  weekData.entries[pid][day] = {online:+on, mutes:+mu, bans:+ba, tickets:+ti};
   saveWeek();
 }
 
-/* =========================
-   CRUD PEOPLE
-========================= */
-function addPerson(){
-  if(!canEdit()) return alert("Нет прав на редактирование (нужен Мл.Админ+).");
-  const nick = document.getElementById("nickname").value.trim();
-  const role = parseInt(document.getElementById("role").value,10);
-  if(!nick) return alert("Введите ник.");
-
-  const id = "p_" + Date.now();
-
-  weekData.people.push({ id, nick, role });
-  weekData.updatedAt = Date.now();
-
-  logAction("addPerson", { id, nick, role });
+async function addPerson(){
+  if(!canEdit()) return;
+  const nick = document.getElementById("nickname").value.trim(), role = +document.getElementById("role").value;
+  if(!nick) return;
+  weekData.people.push({ id:"p_"+Date.now(), nick, role });
   saveWeek();
-  document.getElementById("nickname").value = "";
 }
 
-/* =========================
-   SAVE / CLEAR
-========================= */
 async function saveWeek(){
-  if(!currentWeekKey) return alert("Сначала выбери начало недели.");
-  if(!canEdit()) return alert("Нет прав на сохранение.");
-
-  try{
-    await db.ref("activity/" + currentWeekKey).set(weekData);
-    await loadWeeksList();
-  }catch(e){
-    alert("Ошибка сохранения: " + e.message);
-  }
+  if(!canEdit()) return;
+  await db.ref("activity/" + currentWeekKey).set(weekData);
 }
 
 async function clearWeek(){
-  if(!currentWeekKey) return;
-  if(!confirm("Очистить данные недели?")) return;
-  if(!canManageUsers() && currentRole < 7){
-    return alert("Очистка недели доступна только Ст.Админу+.");
-  }
-  try{
-    await db.ref("activity/" + currentWeekKey).remove();
-    await db.ref("logs/" + currentWeekKey).remove();
-    logAction("clearWeek", { weekKey: currentWeekKey });
-  }catch(e){
-    alert("Ошибка очистки: " + e.message);
-  }
+  if(!canManageUsers() || !confirm("Очистить?")) return;
+  await db.ref("activity/" + currentWeekKey).remove();
 }
 
-/* =========================
-   EXPORT (XLS)
-========================= */
 function exportToExcel(){
-  let table = document.getElementById("mainTable").outerHTML;
-  let blob = new Blob([table], {type:"application/vnd.ms-excel"});
-  let a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `Activity_${currentWeekKey || "week"}.xls`;
-  a.click();
+  const blob = new Blob([document.getElementById("mainTable").outerHTML], {type:"application/vnd.ms-excel"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download="activity.xls"; a.click();
 }
 
-/* =========================
-   LOGGING
-========================= */
-function logAction(action, payload){
-  if(!canEdit()) return;
-  if(!currentWeekKey) return;
-
-  const ref = db.ref("logs/" + currentWeekKey).push();
-  ref.set({
-    ts: Date.now(),
-    uid: currentUser?.uid || null,
-    nick: currentNick,
-    action,
-    payload: payload || null
-  }).catch(()=>{});
-}
-
-/* =========================
-   USERS MANAGEMENT (ROLE)
-========================= */
-function openUsersPanel(){
-  if(!canManageUsers()) return alert("Нужен Ст.Админ+.");
-  document.getElementById("usersModal").style.display = "block";
-  refreshUsersList();
-}
-function closeUsersPanel(){
-  document.getElementById("usersModal").style.display = "none";
-}
-
+/* USER MGMT */
+function openUsersPanel(){ if(canManageUsers()){ document.getElementById("usersModal").style.display="block"; refreshUsersList(); } }
+function closeUsersPanel(){ document.getElementById("usersModal").style.display="none"; }
 async function refreshUsersList(){
-  const tbody = document.getElementById("usersList");
-  tbody.innerHTML = "";
   const snap = await db.ref("users").get();
   if(!snap.exists()) return;
-  const users = snap.val();
-  const rows = Object.entries(users).map(([uid, u])=>({uid, ...u}))
-    .sort((a,b)=>(b.role||0)-(a.role||0));
-
-  for(const u of rows){
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td style="padding:10px; border-top:1px solid rgba(27,42,85,.5); font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${escapeHtml(u.uid)}</td>
-      <td style="padding:10px; border-top:1px solid rgba(27,42,85,.5);">${escapeHtml(u.nickname || "")}</td>
-      <td style="padding:10px; border-top:1px solid rgba(27,42,85,.5); text-align:center;">
-        <span class="badge ${ROLE_BADGE_CLASS(u.role||0)}">${ROLE_NAMES[u.role||0] ?? (u.role||0)}</span>
-      </td>`;
-    tbody.appendChild(tr);
-  }
+  document.getElementById("usersList").innerHTML = Object.entries(snap.val()).map(([uid, u]) => 
+    `<tr><td>${uid}</td><td>${u.nickname}</td><td>${ROLE_NAMES[u.role]||u.role}</td></tr>`).join('');
 }
-
 async function setUserRole(){
-  if(!canManageUsers()) return alert("Нужен Ст.Админ+.");
-  const uid = document.getElementById("u_uid").value.trim();
-  const nick = document.getElementById("u_nick").value.trim();
-  const role = parseInt(document.getElementById("u_role").value,10);
-
-  if(!uid) return alert("Введи UID пользователя.");
-
-  try{
-    await db.ref("users/" + uid).update({
-      nickname: nick || null,
-      role: role,
-      updatedAt: Date.now()
-    });
-    logAction("setUserRole", { uid, role, nickname: nick || null });
-    refreshUsersList();
-    alert("Готово.");
-  }catch(e){
-    alert("Ошибка: " + e.message);
-  }
+  const uid = document.getElementById("u_uid").value.trim(), role = +document.getElementById("u_role").value;
+  if(uid) await db.ref("users/"+uid).update({role});
+  refreshUsersList();
 }
-
-/* =========================
-   INITIAL EMPTY TABLE
-========================= */
-renderEmptyTable();
 </script>
 </body>
 </html>
