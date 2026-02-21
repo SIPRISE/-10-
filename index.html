@@ -14,21 +14,28 @@
         .input-group { display:flex; flex-direction:column; gap:5px; }
         .input-group label { font-size:11px; font-weight:bold; color:var(--accent); }
         input,select { background:#0f172a; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; outline:none; }
-        input:hover { border-color:var(--accent); }
         button { cursor:pointer; border:none; border-radius:8px; padding:10px 20px; font-weight:600; transition:.2s; }
         .btn-add { background:var(--accent); color:white; }
         .btn-clear { background:var(--danger); color:white; margin-left:auto; }
         .btn-refresh { background:var(--success); color:white; }
         .btn-export { background:var(--warn); color:black; }
         .table-container { overflow-x:auto; border-radius:12px; border:1px solid var(--border); }
-        table { width:100%; border-collapse:collapse; background:#1e293b; user-select:none; }
+        table { width:100%; border-collapse:collapse; background:#1e293b; }
         th,td { border:1px solid var(--border); text-align:center; padding:12px; min-width:120px; }
         .sticky-col { position:sticky; left:0; background:#111827; z-index:5; font-weight:bold; border-right:2px solid var(--border); text-align:left; }
-        .cell-input { width:65px; background:rgba(255,255,255,0.05); border:1px solid transparent; color:white; text-align:center; padding:6px; border-radius:4px; transition:0.15s; }
-        .cell-input:focus { border-color:var(--accent); background:rgba(59,130,246,0.2); outline:none; }
-        .badge { padding:4px 8px; border-radius:6px; font-size:11px; text-transform:uppercase; font-weight:800; color:white; }
-        .role-7 { background:var(--success); } .role-8 { background:var(--accent); } .role-1 { background:#14b8a6; }
-        .sum-row { background:#0f172a !important; color:var(--warn); font-weight:bold; font-size:1.05em; }
+        .cell-input { width:65px; background:rgba(255,255,255,0.05); border:1px solid transparent; color:white; text-align:center; padding:6px; border-radius:4px; }
+        
+        /* ЦВЕТА ДОЛЖНОСТЕЙ */
+        .badge { padding:4px 8px; border-radius:6px; font-size:11px; text-transform:uppercase; font-weight:800; color:white; display:inline-block; }
+        .role-7 { background:var(--success); } /* Ст. Админ */
+        .role-8 { background:var(--accent); }  /* Админ */
+        .role-6 { background:#a855f7; }        /* Мл. Админ */
+        .role-5 { background:#ec4899; }        /* Ст. Модератор */
+        .role-3 { background:#38bdf8; }        /* Мл. Модератор */
+        .role-2 { background:#f97316; }        /* Ст. Хелпер */
+        .role-1 { background:#14b8a6; }        /* Хелпер */
+
+        .sum-row { background:#0f172a !important; color:var(--warn); font-weight:bold; }
         body.is-admin .admin-only { display:flex !important; }
         body.not-admin .cell-input { pointer-events:none; background:transparent; border:none; }
     </style>
@@ -51,6 +58,10 @@
             <select id="role">
                 <option value="7">Старший Администратор</option>
                 <option value="8">Администратор</option>
+                <option value="6">Младший Администратор</option>
+                <option value="5">Старший Модератор</option>
+                <option value="3">Младший Модератор</option>
+                <option value="2">Старший Хелпер</option>
                 <option value="1">Хелпер</option>
             </select>
         </div>
@@ -67,7 +78,7 @@
                 <tr id="nickRow"><th class="sticky-col">Никнейм</th></tr>
             </thead>
             <tbody id="bodyRows"></tbody>
-            <tfoot><tr class="sum-row" id="sumRow"><td class="sticky-col">ИТОГО</td></tr></tfoot>
+            <tfoot><tr class="sum-row" id="sumRow"><td class="sticky-col">ИТОГО СКРИНОВ</td></tr></tfoot>
         </table>
     </div>
 </div>
@@ -141,9 +152,11 @@ function calculate() {
  const bodyRows = document.getElementById("bodyRows").rows;
 
  for(let i=1;i<=columns;i++){
-   const idClass = bodyRows[0].cells[i]?.querySelector("input")?.classList[1];
-   if(!idClass) continue;
+   const input = bodyRows[0].cells[i]?.querySelector("input");
+   if(!input) continue;
+   const idClass = input.classList[1];
    let total = 0;
+   // Считаем только первые 7 строк (дни недели)
    for(let j=0;j<7;j++)
      total += parseInt(bodyRows[j].cells[i].querySelector("input").value)||0;
    document.getElementById("sum_"+idClass).innerText = total;
@@ -156,9 +169,7 @@ function save() {
  document.querySelectorAll(".cell-input").forEach(i => i.setAttribute("value",i.value));
  db.ref("final_screen_system").set({
    html: document.getElementById("tableWrapper").innerHTML,
-   date: document.getElementById("weekStart").value,
-   updatedBy: login,
-   time: new Date().toLocaleString()
+   date: document.getElementById("weekStart").value
  });
 }
 
@@ -167,13 +178,7 @@ function rebind() {
 }
 
 function refresh() {
- db.ref("final_screen_system").once("value").then(snap=>{
-   const data = snap.val();
-   if(data){
-     document.getElementById("tableWrapper").innerHTML=data.html;
-     rebind();
-   }
- });
+ location.reload();
 }
 
 function clearData() {
@@ -183,13 +188,12 @@ function clearData() {
  }
 }
 
-// экспорт в xlsx
 function exportToExcel(){
  let table = document.getElementById("mainTable").outerHTML;
  let blob = new Blob([table],{type:"application/vnd.ms-excel"});
  let a=document.createElement("a");
  a.href=URL.createObjectURL(blob);
- a.download="ActivitySystem.xls";
+ a.download="ActivityStats.xls";
  a.click();
 }
 </script>
