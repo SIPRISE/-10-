@@ -1,201 +1,955 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Activity System - SIPRISE Edition</title>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-    <style>
-        :root { --bg:#0f172a; --card:#1e293b; --border:#334155; --text:#f1f5f9; --accent:#3b82f6; --success:#10b981; --warn:#facc15; --danger:#ef4444; }
-        body { background:var(--bg); color:var(--text); font-family:sans-serif; margin:0; padding:20px; }
-        .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:25px; max-width:1500px; margin:auto; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
-        h2 { text-align:center; color:white; margin-bottom:25px; }
-        .toolbar { display:flex; flex-wrap:wrap; gap:15px; margin-bottom:25px; padding:20px; border:1px solid var(--accent); background:rgba(0,0,0,0.2); border-radius:12px; align-items:flex-end; }
-        .input-group { display:flex; flex-direction:column; gap:5px; }
-        .input-group label { font-size:11px; font-weight:bold; color:var(--accent); }
-        input,select { background:#0f172a; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; outline:none; }
-        button { cursor:pointer; border:none; border-radius:8px; padding:10px 20px; font-weight:600; transition:.2s; }
-        .btn-add { background:var(--accent); color:white; }
-        .btn-clear { background:var(--danger); color:white; margin-left:auto; }
-        .btn-refresh { background:var(--success); color:white; }
-        .btn-export { background:var(--warn); color:black; }
-        .table-container { overflow-x:auto; border-radius:12px; border:1px solid var(--border); }
-        table { width:100%; border-collapse:collapse; background:#1e293b; }
-        th,td { border:1px solid var(--border); text-align:center; padding:12px; min-width:120px; }
-        .sticky-col { position:sticky; left:0; background:#111827; z-index:5; font-weight:bold; border-right:2px solid var(--border); text-align:left; }
-        .cell-input { width:65px; background:rgba(255,255,255,0.05); border:1px solid transparent; color:white; text-align:center; padding:6px; border-radius:4px; }
-        
-        /* ЦВЕТА ДОЛЖНОСТЕЙ */
-        .badge { padding:4px 8px; border-radius:6px; font-size:11px; text-transform:uppercase; font-weight:800; color:white; display:inline-block; }
-        .role-7 { background:var(--success); } /* Ст. Админ */
-        .role-8 { background:var(--accent); }  /* Админ */
-        .role-6 { background:#a855f7; }        /* Мл. Админ */
-        .role-5 { background:#ec4899; }        /* Ст. Модератор */
-        .role-3 { background:#38bdf8; }        /* Мл. Модератор */
-        .role-2 { background:#f97316; }        /* Ст. Хелпер */
-        .role-1 { background:#14b8a6; }        /* Хелпер */
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Activity System — LoliLand Edition</title>
 
-        .sum-row { background:#0f172a !important; color:var(--warn); font-weight:bold; }
-        body.is-admin .admin-only { display:flex !important; }
-        body.not-admin .cell-input { pointer-events:none; background:transparent; border:none; }
-    </style>
+  <!-- Firebase compat (как у тебя) -->
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+  <style>
+    :root{
+      --bg:#060812;
+      --bg2:#0a1026;
+      --card:#0b122b;
+      --card2:#0a1638;
+      --border:#1b2a55;
+      --text:#e6ecff;
+
+      --accent:#7c3aed;   /* LoliLand purple */
+      --accent2:#22d3ee;  /* neon cyan */
+      --success:#10b981;
+      --warn:#facc15;
+      --danger:#ef4444;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --glow: 0 0 0 1px rgba(124,58,237,.25), 0 0 38px rgba(124,58,237,.25);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0; padding:22px;
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(124,58,237,.22), transparent 55%),
+                  radial-gradient(1000px 700px at 85% 20%, rgba(34,211,238,.18), transparent 55%),
+                  linear-gradient(180deg, var(--bg), var(--bg2));
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue";
+    }
+
+    .wrap{max-width:1600px; margin:0 auto;}
+    .card{
+      background: linear-gradient(180deg, rgba(11,18,43,.92), rgba(8,14,36,.92));
+      border:1px solid rgba(27,42,85,.9);
+      border-radius:18px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .header{
+      padding:18px 20px;
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      border-bottom:1px solid rgba(27,42,85,.8);
+      background: linear-gradient(90deg, rgba(124,58,237,.16), rgba(34,211,238,.10));
+    }
+
+    .title{
+      display:flex; flex-direction:column; gap:4px;
+    }
+    .title h2{
+      margin:0;
+      font-size:18px;
+      letter-spacing:.4px;
+    }
+    .title .sub{
+      font-size:12px;
+      color:rgba(230,236,255,.75);
+    }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px;
+      background: rgba(124,58,237,.14);
+      border:1px solid rgba(124,58,237,.30);
+      border-radius:999px;
+      box-shadow: var(--glow);
+      font-size:12px;
+      white-space:nowrap;
+    }
+
+    .toolbar{
+      display:flex; flex-wrap:wrap; gap:12px;
+      padding:16px 18px;
+      border-bottom:1px solid rgba(27,42,85,.7);
+      background: rgba(6,8,18,.35);
+      align-items:flex-end;
+    }
+
+    .group{display:flex; flex-direction:column; gap:6px;}
+    .group label{
+      font-size:11px; font-weight:900;
+      letter-spacing:.6px;
+      color: rgba(34,211,238,.95);
+      text-transform:uppercase;
+    }
+    input, select{
+      min-height:40px;
+      background: rgba(10,16,38,.9);
+      color: var(--text);
+      border:1px solid rgba(27,42,85,.9);
+      border-radius:10px;
+      padding:10px 12px;
+      outline:none;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
+    }
+    input:focus, select:focus{
+      border-color: rgba(34,211,238,.85);
+      box-shadow: 0 0 0 3px rgba(34,211,238,.12);
+    }
+
+    button{
+      cursor:pointer;
+      border:none;
+      border-radius:10px;
+      padding:10px 14px;
+      font-weight:900;
+      letter-spacing:.2px;
+      transition: transform .08s ease, filter .15s ease, opacity .15s ease;
+      min-height:40px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+    }
+    button:active{ transform: translateY(1px); }
+    .btn-primary{ background: linear-gradient(90deg, var(--accent), #a78bfa); color:white; }
+    .btn-success{ background: linear-gradient(90deg, var(--success), #34d399); color:#052016; }
+    .btn-warn{ background: linear-gradient(90deg, var(--warn), #fde68a); color:#2a2100; }
+    .btn-danger{ background: linear-gradient(90deg, var(--danger), #fb7185); color:#2a040b; }
+    .btn-ghost{
+      background: rgba(230,236,255,.06);
+      border:1px solid rgba(230,236,255,.12);
+      color: rgba(230,236,255,.9);
+    }
+    .spacer{ margin-left:auto; }
+
+    .table-wrap{
+      overflow:auto;
+      border-top:1px solid rgba(27,42,85,.65);
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:1200px;
+      background: rgba(10,16,38,.55);
+    }
+    th, td{
+      border:1px solid rgba(27,42,85,.7);
+      padding:12px;
+      text-align:center;
+      min-width:120px;
+      font-size:13px;
+    }
+    thead th{
+      position:sticky;
+      top:0;
+      z-index:7;
+      background: rgba(11,18,43,.95);
+      backdrop-filter: blur(10px);
+    }
+
+    .sticky-col{
+      position:sticky;
+      left:0;
+      z-index:8;
+      text-align:left;
+      font-weight:900;
+      background: rgba(6,8,18,.92);
+    }
+
+    .badge{
+      padding:5px 10px;
+      border-radius:10px;
+      font-size:11px;
+      text-transform:uppercase;
+      font-weight:1000;
+      color:white;
+      display:inline-block;
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow: 0 0 0 1px rgba(0,0,0,.22);
+      white-space:nowrap;
+    }
+    /* роли */
+    .role-8{ background: linear-gradient(90deg, #2563eb, #60a5fa);} /* Админ */
+    .role-7{ background: linear-gradient(90deg, #10b981, #34d399);} /* Ст. Админ */
+    .role-6{ background: linear-gradient(90deg, #a855f7, #c4b5fd);} /* Мл. Админ */
+    .role-5{ background: linear-gradient(90deg, #ec4899, #f9a8d4);} /* Ст. Модер */
+    .role-3{ background: linear-gradient(90deg, #38bdf8, #7dd3fc);} /* Мл. Модер */
+    .role-2{ background: linear-gradient(90deg, #f97316, #fdba74);} /* Ст. Хелпер */
+    .role-1{ background: linear-gradient(90deg, #14b8a6, #5eead4);} /* Хелпер */
+
+    .cell-input{
+      width:72px;
+      background: rgba(230,236,255,.06);
+      border:1px solid rgba(230,236,255,.10);
+      color:var(--text);
+      text-align:center;
+      padding:7px 8px;
+      border-radius:9px;
+      font-weight:900;
+    }
+
+    .muted{ color: rgba(230,236,255,.62); font-weight:700; }
+    .sum-row td{
+      background: rgba(6,8,18,.92) !important;
+      color: var(--warn);
+      font-weight:1000;
+    }
+    .sum-sub td{
+      background: rgba(6,8,18,.80) !important;
+      color: rgba(230,236,255,.85);
+      font-weight:900;
+    }
+
+    .right{
+      text-align:right;
+    }
+    .note{
+      padding:14px 18px;
+      border-top:1px solid rgba(27,42,85,.65);
+      color: rgba(230,236,255,.68);
+      font-size:12px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      background: rgba(6,8,18,.32);
+    }
+
+    /* скрытие админ-инструментов */
+    body.role-viewer .admin-only{ display:none !important; }
+    body.role-viewer .cell-input{ pointer-events:none; opacity:.65; }
+    body.role-editor .super-only{ display:none !important; }
+    .danger-text{ color: #fb7185; font-weight:900; }
+  </style>
 </head>
-<body class="not-admin">
-<div class="card">
-    <h2 id="header">Учет активности состава</h2>
 
-    <div class="toolbar admin-only">
-        <div class="input-group">
-            <label>Начало недели</label>
-            <input type="date" id="weekStart" onchange="generateRows()">
-        </div>
-        <div class="input-group">
-            <label>Никнейм</label>
-            <input type="text" id="nickname" placeholder="Nickname">
-        </div>
-        <div class="input-group">
-            <label>Должность</label>
-            <select id="role">
-                <option value="7">Старший Администратор</option>
-                <option value="8">Администратор</option>
-                <option value="6">Младший Администратор</option>
-                <option value="5">Старший Модератор</option>
-                <option value="3">Младший Модератор</option>
-                <option value="2">Старший Хелпер</option>
-                <option value="1">Хелпер</option>
-            </select>
-        </div>
-        <button class="btn-add" onclick="addPerson()">＋ Добавить сотрудника</button>
-        <button class="btn-refresh" onclick="refresh()">🔄 Обновить</button>
-        <button class="btn-export" onclick="exportToExcel()">📥 Export</button>
-        <button class="btn-clear" onclick="clearData()">🗑 Очистить</button>
+<body class="role-viewer">
+<div class="wrap">
+  <div class="card">
+
+    <div class="header">
+      <div class="title">
+        <h2 id="hdr">Учет активности состава — LoliLand</h2>
+        <div class="sub" id="who">Не авторизован</div>
+      </div>
+      <div class="pill" id="weekPill">Неделя: —</div>
     </div>
 
-    <div class="table-container" id="tableWrapper">
-        <table id="mainTable">
-            <thead>
-                <tr id="roleRow"><th class="sticky-col">Должность</th></tr>
-                <tr id="nickRow"><th class="sticky-col">Никнейм</th></tr>
-            </thead>
-            <tbody id="bodyRows"></tbody>
-            <tfoot><tr class="sum-row" id="sumRow"><td class="sticky-col">ИТОГО СКРИНОВ</td></tr></tfoot>
+    <!-- AUTH BAR -->
+    <div class="toolbar" id="authBar">
+      <div class="group">
+        <label>Email</label>
+        <input id="email" type="email" placeholder="name@domain.com" autocomplete="username">
+      </div>
+      <div class="group">
+        <label>Пароль</label>
+        <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-primary" onclick="signIn()">🔐 Войти</button>
+      <button class="btn-ghost" onclick="signUp()">🧾 Регистрация</button>
+      <div class="spacer"></div>
+      <button class="btn-ghost" onclick="signOut()">🚪 Выйти</button>
+    </div>
+
+    <!-- MAIN TOOLBAR -->
+    <div class="toolbar admin-only" id="mainBar">
+      <div class="group">
+        <label>Неделя (начало)</label>
+        <input type="date" id="weekStart" onchange="selectWeekFromDate()">
+      </div>
+
+      <div class="group">
+        <label>Архив недель</label>
+        <select id="weekSelect" onchange="loadSelectedWeek()">
+          <option value="">—</option>
+        </select>
+      </div>
+
+      <div class="group">
+        <label>Никнейм</label>
+        <input type="text" id="nickname" placeholder="Nickname">
+      </div>
+
+      <div class="group">
+        <label>Должность</label>
+        <select id="role">
+          <option value="7">Старший Администратор</option>
+          <option value="8">Администратор</option>
+          <option value="6">Младший Администратор</option>
+          <option value="5">Старший Модератор</option>
+          <option value="3">Младший Модератор</option>
+          <option value="2">Старший Хелпер</option>
+          <option value="1">Хелпер</option>
+        </select>
+      </div>
+
+      <button class="btn-primary" onclick="addPerson()">＋ Добавить</button>
+      <button class="btn-success" onclick="saveWeek()">💾 Сохранить</button>
+      <button class="btn-warn" onclick="exportToExcel()">📥 Export</button>
+
+      <div class="spacer"></div>
+
+      <button class="btn-ghost super-only" onclick="openUsersPanel()">👑 Пользователи</button>
+      <button class="btn-danger super-only" onclick="clearWeek()">🗑 Очистить неделю</button>
+    </div>
+
+    <div class="table-wrap" id="tableWrap">
+      <table id="mainTable">
+        <thead>
+          <tr id="roleRow"><th class="sticky-col">Должность</th></tr>
+          <tr id="nickRow"><th class="sticky-col">Никнейм</th></tr>
+        </thead>
+        <tbody id="bodyRows"></tbody>
+
+        <!-- итоги по скринам -->
+        <tfoot>
+          <tr class="sum-row" id="sumScreensRow"><td class="sticky-col">ИТОГО СКРИНОВ (7 дней)</td></tr>
+          <tr class="sum-sub" id="sumOnlineRow"><td class="sticky-col">Σ Онлайн</td></tr>
+          <tr class="sum-sub" id="sumMutesRow"><td class="sticky-col">Σ Муты</td></tr>
+          <tr class="sum-sub" id="sumBansRow"><td class="sticky-col">Σ Баны</td></tr>
+          <tr class="sum-sub" id="sumTicketsRow"><td class="sticky-col">Σ Тикеты</td></tr>
+          <tr class="sum-sub" id="sumRatingRow"><td class="sticky-col">Рейтинг</td></tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="note">
+      <div>
+        <span class="muted">Рейтинг:</span>
+        <span class="muted">Онлайн×1 + Муты×2 + Баны×3 + Тикеты×1.5</span>
+      </div>
+      <div class="muted">Все изменения логируются (для ролей ≥ Мл.Админ).</div>
+    </div>
+  </div>
+</div>
+
+<!-- USERS PANEL (простая модалка) -->
+<div id="usersModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter: blur(6px); z-index:9999;">
+  <div style="max-width:980px; margin:40px auto; background:rgba(11,18,43,.95); border:1px solid rgba(27,42,85,.9); border-radius:16px; box-shadow: var(--shadow); overflow:hidden;">
+    <div style="padding:16px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(27,42,85,.7);">
+      <div style="font-weight:1000;">👑 Управление пользователями</div>
+      <button class="btn-ghost" onclick="closeUsersPanel()">✖ Закрыть</button>
+    </div>
+
+    <div style="padding:16px 18px; display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
+      <div class="group">
+        <label>UID</label>
+        <input id="u_uid" placeholder="uid пользователя">
+      </div>
+      <div class="group">
+        <label>Ник</label>
+        <input id="u_nick" placeholder="ник в системе">
+      </div>
+      <div class="group">
+        <label>Роль</label>
+        <select id="u_role">
+          <option value="8">Администратор (8)</option>
+          <option value="7">Старший Администратор (7)</option>
+          <option value="6">Младший Администратор (6)</option>
+          <option value="5">Старший Модератор (5)</option>
+          <option value="3">Младший Модератор (3)</option>
+          <option value="2">Старший Хелпер (2)</option>
+          <option value="1">Хелпер (1)</option>
+          <option value="0">Viewer (0)</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="setUserRole()">✅ Применить</button>
+
+      <div class="spacer"></div>
+      <div class="muted">
+        Важно: пользователь сначала должен сам зарегистрироваться/войти, чтобы у него появился UID.
+      </div>
+    </div>
+
+    <div style="padding:0 18px 18px 18px;">
+      <div class="muted" style="margin-bottom:10px;">Список пользователей (roles):</div>
+      <div style="overflow:auto; border:1px solid rgba(27,42,85,.7); border-radius:12px;">
+        <table style="width:100%; border-collapse:collapse; min-width:760px;">
+          <thead>
+            <tr>
+              <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(27,42,85,.7);">UID</th>
+              <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(27,42,85,.7);">Ник</th>
+              <th style="text-align:center; padding:10px; border-bottom:1px solid rgba(27,42,85,.7);">Роль</th>
+            </tr>
+          </thead>
+          <tbody id="usersList"></tbody>
         </table>
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
+/* =========================
+   FIREBASE INIT
+========================= */
 const firebaseConfig = {
- apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
- authDomain: "aktiv-d4d72.firebaseapp.com",
- databaseURL: "https://aktiv-d4d72-default-rtdb.firebaseio.com",
- projectId: "aktiv-d4d72",
- storageBucket: "aktiv-d4d72.firebasestorage.app",
- messagingSenderId: "714513253285",
- appId: "1:714513253285:web:c76d9fec18593db9a55e4c"
+  apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
+  authDomain: "aktiv-d4d72.firebaseapp.com",
+  databaseURL: "https://aktiv-d4d72-default-rtdb.firebaseio.com",
+  projectId: "aktiv-d4d72",
+  storageBucket: "aktiv-d4d72.firebasestorage.app",
+  messagingSenderId: "714513253285",
+  appId: "1:714513253285:web:c76d9fec18593db9a55e4c"
 };
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 const db = firebase.database();
 
-const OWNER = "SIPRISE";
-let login = prompt("Введите ваш никнейм:")?.trim();
-if (login && login.toUpperCase() === OWNER.toUpperCase()) {
- document.body.classList.replace('not-admin', 'is-admin');
- document.getElementById("header").innerText += " [ROOT]";
+/* =========================
+   CONSTANTS / HELPERS
+========================= */
+const ROLE_NAMES = {
+  8: "Администратор",
+  7: "Старший Администратор",
+  6: "Младший Администратор",
+  5: "Старший Модератор",
+  3: "Младший Модератор",
+  2: "Старший Хелпер",
+  1: "Хелпер",
+  0: "Viewer"
+};
+const ROLE_BADGE_CLASS = (role) => `role-${role}`;
+
+const WEIGHTS = { online: 1, mutes: 2, bans: 3, tickets: 1.5 };
+
+// state
+let currentUser = null;
+let currentRole = 0;
+let currentNick = "—";
+
+let currentWeekKey = "";      // e.g. 2026-02-19
+let weekData = null;          // structured
+let unsubWeek = null;
+
+function weekKeyFromDate(dateStr){
+  // dateStr = YYYY-MM-DD
+  return dateStr || "";
+}
+function formatWeekPill(dateStr){
+  if(!dateStr) return "Неделя: —";
+  const d = new Date(dateStr + "T00:00:00");
+  const ru = d.toLocaleDateString("ru-RU",{year:"numeric",month:"2-digit",day:"2-digit"});
+  return `Неделя: ${ru}`;
+}
+function canEdit(){
+  return currentRole >= 6; // Мл.Админ+
+}
+function canManageUsers(){
+  return currentRole >= 7; // Ст.Админ+
+}
+function setBodyRoleClass(){
+  document.body.classList.remove("role-viewer","role-editor","role-super");
+  if(currentRole >= 7) document.body.classList.add("role-super");
+  else if(currentRole >= 6) document.body.classList.add("role-editor");
+  else document.body.classList.add("role-viewer");
 }
 
-db.ref("final_screen_system").on("value", snap => {
- const data = snap.val();
- if (data) {
-   document.getElementById("tableWrapper").innerHTML = data.html;
-   document.getElementById("weekStart").value = data.date || "";
-   if (document.body.classList.contains("is-admin")) rebind();
- }
+/* =========================
+   AUTH
+========================= */
+async function signIn(){
+  const email = document.getElementById("email").value.trim();
+  const pass  = document.getElementById("pass").value;
+  if(!email || !pass) return alert("Введи email и пароль.");
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+  }catch(e){
+    alert("Ошибка входа: " + e.message);
+  }
+}
+
+async function signUp(){
+  const email = document.getElementById("email").value.trim();
+  const pass  = document.getElementById("pass").value;
+  if(!email || !pass) return alert("Введи email и пароль.");
+  try{
+    await auth.createUserWithEmailAndPassword(email, pass);
+    alert("Аккаунт создан. Теперь попроси Ст.Админа выдать роль (иначе будет Viewer).");
+  }catch(e){
+    alert("Ошибка регистрации: " + e.message);
+  }
+}
+
+async function signOut(){
+  await auth.signOut();
+}
+
+auth.onAuthStateChanged(async (user)=>{
+  currentUser = user;
+  if(!user){
+    currentRole = 0;
+    currentNick = "—";
+    document.getElementById("who").innerHTML = `<span class="danger-text">Не авторизован</span>`;
+    document.getElementById("weekPill").innerText = "Неделя: —";
+    setBodyRoleClass();
+    renderEmptyTable();
+    stopWeekSub();
+    return;
+  }
+
+  // load profile
+  const snap = await db.ref("users/" + user.uid).get();
+  const prof = snap.exists() ? snap.val() : null;
+  currentRole = prof?.role ?? 0;
+  currentNick = prof?.nickname ?? user.email ?? "User";
+
+  document.getElementById("who").innerText = `${currentNick} • ${ROLE_NAMES[currentRole] ?? "—"} • UID: ${user.uid}`;
+  setBodyRoleClass();
+
+  // ensure user node exists
+  if(!snap.exists()){
+    await db.ref("users/" + user.uid).set({ nickname: currentNick, role: 0, createdAt: Date.now() });
+  }
+
+  await loadWeeksList();
+  // auto-select current week by Monday? (берём текущую дату)
+  const today = new Date();
+  const monday = new Date(today);
+  const day = (today.getDay() + 6) % 7; // Mon=0
+  monday.setDate(today.getDate() - day);
+  const iso = monday.toISOString().slice(0,10);
+  document.getElementById("weekStart").value = iso;
+  selectWeekFromDate();
 });
 
-function generateRows() {
- const start = document.getElementById("weekStart").value;
- if (!start) return;
- const body = document.getElementById("bodyRows");
- const base = new Date(start);
- let html = "";
- for (let i = 0; i < 7; i++) {
-   const d = new Date(base); d.setDate(base.getDate() + i);
-   const fmt = d.toLocaleDateString("ru-RU",{weekday:"short",day:"numeric"});
-   html += `<tr><td class='sticky-col' style='color:var(--accent)'>${fmt}</td></tr>`;
- }
- ["📊 Онлайн","🚫 Муты","🔨 Баны","📩 Тикеты"].forEach(s => {
-   html += `<tr><td class='sticky-col' style='color:#94a3b8'>${s}</td></tr>`;
- });
- body.innerHTML = html;
- save();
+/* =========================
+   WEEKS LIST (ARCHIVE)
+========================= */
+async function loadWeeksList(){
+  const sel = document.getElementById("weekSelect");
+  sel.innerHTML = `<option value="">—</option>`;
+  const snap = await db.ref("activity").get();
+  if(!snap.exists()) return;
+  const keys = Object.keys(snap.val()).sort().reverse();
+  for(const k of keys){
+    const opt = document.createElement("option");
+    opt.value = k;
+    opt.textContent = k;
+    sel.appendChild(opt);
+  }
 }
 
-function addPerson() {
- const nick = document.getElementById("nickname").value.trim();
- const roleSel = document.getElementById("role");
- if (!nick) return alert("Введите ник");
- const id = "c" + Date.now();
-
- document.getElementById("roleRow").innerHTML += `<td><span class='badge role-${roleSel.value}'>${roleSel.selectedOptions[0].text}</span></td>`;
- document.getElementById("nickRow").innerHTML += `<td title='${nick}'>${nick}</td>`;
-
- document.querySelectorAll("#bodyRows tr").forEach(row=>{
-   row.innerHTML += `<td><input type='number' value='0' class='cell-input ${id}' oninput='calculate()'></td>`;
- });
- document.getElementById("sumRow").innerHTML += `<td id='sum_${id}'>0</td>`;
- save();
+function loadSelectedWeek(){
+  const k = document.getElementById("weekSelect").value;
+  if(!k) return;
+  document.getElementById("weekStart").value = k;
+  selectWeekFromDate();
 }
 
-function calculate() {
- const nickRow = document.getElementById("nickRow");
- const columns = nickRow.cells.length - 1;
- const bodyRows = document.getElementById("bodyRows").rows;
-
- for(let i=1;i<=columns;i++){
-   const input = bodyRows[0].cells[i]?.querySelector("input");
-   if(!input) continue;
-   const idClass = input.classList[1];
-   let total = 0;
-   // Считаем только первые 7 строк (дни недели)
-   for(let j=0;j<7;j++)
-     total += parseInt(bodyRows[j].cells[i].querySelector("input").value)||0;
-   document.getElementById("sum_"+idClass).innerText = total;
- }
- save();
+function selectWeekFromDate(){
+  const dateStr = document.getElementById("weekStart").value;
+  const k = weekKeyFromDate(dateStr);
+  if(!k) return;
+  currentWeekKey = k;
+  document.getElementById("weekPill").innerText = formatWeekPill(k);
+  subscribeWeek(k);
 }
 
-function save() {
- if (!document.body.classList.contains("is-admin")) return;
- document.querySelectorAll(".cell-input").forEach(i => i.setAttribute("value",i.value));
- db.ref("final_screen_system").set({
-   html: document.getElementById("tableWrapper").innerHTML,
-   date: document.getElementById("weekStart").value
- });
+/* =========================
+   DATA MODEL (STRUCTURED)
+========================= */
+/*
+activity/{weekKey} = {
+  weekStart: "YYYY-MM-DD",
+  people: [{id, nick, role}],
+  days: [ "YYYY-MM-DD"...7 ],
+  metrics: ["online","mutes","bans","tickets"],
+  entries: { [personId]: { [dayIndex]: {online,mutes,bans,tickets} } },
+  updatedAt
+}
+logs/{weekKey}/{push} = { ts, uid, nick, action, payload }
+*/
+
+function buildDefaultWeek(weekKey){
+  const base = new Date(weekKey + "T00:00:00");
+  const days = [];
+  for(let i=0;i<7;i++){
+    const d = new Date(base);
+    d.setDate(base.getDate()+i);
+    days.push(d.toISOString().slice(0,10));
+  }
+  return {
+    weekStart: weekKey,
+    days,
+    metrics: ["online","mutes","bans","tickets"],
+    people: [],
+    entries: {},
+    updatedAt: Date.now()
+  };
 }
 
-function rebind() {
- document.querySelectorAll(".cell-input").forEach(i => i.oninput = calculate);
+function stopWeekSub(){
+  if(unsubWeek){
+    unsubWeek.off();
+    unsubWeek = null;
+  }
 }
 
-function refresh() {
- location.reload();
+function subscribeWeek(weekKey){
+  stopWeekSub();
+  const ref = db.ref("activity/" + weekKey);
+  unsubWeek = ref;
+
+  ref.on("value", (snap)=>{
+    weekData = snap.exists() ? snap.val() : buildDefaultWeek(weekKey);
+    renderWeek();
+  });
 }
 
-function clearData() {
- if(confirm("Очистить таблицу?")){
-   db.ref("final_screen_system").remove();
-   location.reload();
- }
+/* =========================
+   RENDER TABLE
+========================= */
+function renderEmptyTable(){
+  document.getElementById("roleRow").innerHTML = `<th class="sticky-col">Должность</th>`;
+  document.getElementById("nickRow").innerHTML = `<th class="sticky-col">Никнейм</th>`;
+  document.getElementById("bodyRows").innerHTML = "";
+  ["sumScreensRow","sumOnlineRow","sumMutesRow","sumBansRow","sumTicketsRow","sumRatingRow"].forEach(id=>{
+    document.getElementById(id).innerHTML = `<td class="sticky-col">${document.getElementById(id).cells?.[0]?.innerText || ""}</td>`;
+  });
 }
 
+function renderWeek(){
+  if(!weekData) return;
+  const people = weekData.people || [];
+  const days = weekData.days || [];
+  const body = document.getElementById("bodyRows");
+
+  // header rows
+  const roleRow = document.getElementById("roleRow");
+  const nickRow = document.getElementById("nickRow");
+  roleRow.innerHTML = `<th class="sticky-col">Должность</th>`;
+  nickRow.innerHTML = `<th class="sticky-col">Никнейм</th>`;
+
+  for(const p of people){
+    roleRow.innerHTML += `<th><span class="badge ${ROLE_BADGE_CLASS(p.role)}">${ROLE_NAMES[p.role] ?? p.role}</span></th>`;
+    nickRow.innerHTML += `<th title="${escapeHtml(p.nick)}">${escapeHtml(p.nick)}</th>`;
+  }
+
+  // rows: 7 дней + 4 метрики
+  let html = "";
+
+  // 7 days (for "screens" total we count sum of all metrics? НЕТ: как в твоём — только числа за день (скрины) -> делаем суммой всех 4 метрик за день)
+  for(let i=0;i<7;i++){
+    const d = new Date(days[i] + "T00:00:00");
+    const fmt = d.toLocaleDateString("ru-RU",{weekday:"short",day:"2-digit",month:"2-digit"});
+    html += `<tr><td class="sticky-col" style="color: rgba(34,211,238,.95)">${fmt}</td>`;
+    for(const p of people){
+      const cell = getEntry(p.id, i);
+      const dayScreens = (cell.online||0)+(cell.mutes||0)+(cell.bans||0)+(cell.tickets||0);
+      html += `<td>${renderInput(p.id, i, "screens", dayScreens, true)}</td>`;
+    }
+    html += `</tr>`;
+  }
+
+  // metrics rows
+  const metricRows = [
+    {key:"online", label:"📊 Онлайн"},
+    {key:"mutes", label:"🚫 Муты"},
+    {key:"bans", label:"🔨 Баны"},
+    {key:"tickets", label:"📩 Тикеты"}
+  ];
+
+  for(const m of metricRows){
+    html += `<tr><td class="sticky-col" style="color:rgba(230,236,255,.65)">${m.label}</td>`;
+    for(const p of people){
+      const sum = sumMetric(p.id, m.key);
+      html += `<td class="muted">${sum}</td>`;
+    }
+    html += `</tr>`;
+  }
+
+  body.innerHTML = html;
+
+  // totals footer
+  renderTotals();
+
+  // lock inputs for viewers
+  if(canEdit()){
+    bindScreensInputs();
+  }
+}
+
+function renderTotals(){
+  const people = weekData.people || [];
+
+  const sumScreensRow = document.getElementById("sumScreensRow");
+  const sumOnlineRow  = document.getElementById("sumOnlineRow");
+  const sumMutesRow   = document.getElementById("sumMutesRow");
+  const sumBansRow    = document.getElementById("sumBansRow");
+  const sumTicketsRow = document.getElementById("sumTicketsRow");
+  const sumRatingRow  = document.getElementById("sumRatingRow");
+
+  sumScreensRow.innerHTML = `<td class="sticky-col">ИТОГО СКРИНОВ (7 дней)</td>`;
+  sumOnlineRow.innerHTML  = `<td class="sticky-col">Σ Онлайн</td>`;
+  sumMutesRow.innerHTML   = `<td class="sticky-col">Σ Муты</td>`;
+  sumBansRow.innerHTML    = `<td class="sticky-col">Σ Баны</td>`;
+  sumTicketsRow.innerHTML = `<td class="sticky-col">Σ Тикеты</td>`;
+  sumRatingRow.innerHTML  = `<td class="sticky-col">Рейтинг</td>`;
+
+  for(const p of people){
+    const online = sumMetric(p.id,"online");
+    const mutes = sumMetric(p.id,"mutes");
+    const bans = sumMetric(p.id,"bans");
+    const tickets = sumMetric(p.id,"tickets");
+    const screens = online+mutes+bans+tickets; // суммарные скрины недели
+    const rating = (online*WEIGHTS.online) + (mutes*WEIGHTS.mutes) + (bans*WEIGHTS.bans) + (tickets*WEIGHTS.tickets);
+
+    sumScreensRow.innerHTML += `<td>${screens}</td>`;
+    sumOnlineRow.innerHTML  += `<td>${online}</td>`;
+    sumMutesRow.innerHTML   += `<td>${mutes}</td>`;
+    sumBansRow.innerHTML    += `<td>${bans}</td>`;
+    sumTicketsRow.innerHTML += `<td>${tickets}</td>`;
+    sumRatingRow.innerHTML  += `<td><b>${round1(rating)}</b></td>`;
+  }
+}
+
+function round1(x){ return Math.round(x*10)/10; }
+
+function escapeHtml(s){
+  return (s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+}
+
+/* =========================
+   SCREEN INPUTS (EDIT DAYS)
+   Вводим "скрины" за день одним числом,
+   а потом распределяем по метрикам через быстрый попап? (слишком сложно)
+   Поэтому делаем проще:
+   - На каждом дне вводится ОБЩЕЕ число скринов
+   - При вводе: сохраняем в entries[dayIndex].screens
+   - И отдельно сохраняем breakdown online/mutes/bans/tickets через отдельную форму? (не просили)
+   ----
+   Но ты просил автоподсчёт мутов/банов отдельно.
+   Значит: надо хранить реальные online/mutes/bans/tickets по дням.
+   Поэтому делаем так:
+   - кликаешь на "скрины" дня -> открывается мини-редактор 4 чисел
+========================= */
+
+function renderInput(pid, dayIndex, type, value, isDayScreens){
+  const disabled = canEdit() ? "" : "disabled";
+  // input хранит только total, но по клику открываем editor
+  return `<input ${disabled} class="cell-input" type="number" min="0" value="${value||0}"
+          data-pid="${pid}" data-day="${dayIndex}" onclick="openDayEditor(event)"
+          onkeydown="if(event.key==='Enter'){this.blur();}">`;
+}
+
+function bindScreensInputs(){
+  // nothing additional now; click handler inline
+}
+
+function getEntry(pid, dayIndex){
+  const e = weekData.entries?.[pid]?.[dayIndex];
+  return e ? {online:+e.online||0, mutes:+e.mutes||0, bans:+e.bans||0, tickets:+e.tickets||0} : {online:0,mutes:0,bans:0,tickets:0};
+}
+
+function sumMetric(pid, key){
+  let sum = 0;
+  for(let i=0;i<7;i++){
+    sum += (getEntry(pid,i)[key]||0);
+  }
+  return sum;
+}
+
+/* =========================
+   DAY EDITOR (4 поля)
+========================= */
+function openDayEditor(ev){
+  if(!canEdit()) return;
+  const inp = ev.target;
+  const pid = inp.dataset.pid;
+  const day = +inp.dataset.day;
+
+  const current = getEntry(pid, day);
+
+  const online = prompt("Онлайн за день:", current.online);
+  if(online === null) return;
+
+  const mutes = prompt("Муты за день:", current.mutes);
+  if(mutes === null) return;
+
+  const bans = prompt("Баны за день:", current.bans);
+  if(bans === null) return;
+
+  const tickets = prompt("Тикеты за день:", current.tickets);
+  if(tickets === null) return;
+
+  const next = {
+    online: Math.max(0, parseInt(online)||0),
+    mutes: Math.max(0, parseInt(mutes)||0),
+    bans: Math.max(0, parseInt(bans)||0),
+    tickets: Math.max(0, parseInt(tickets)||0)
+  };
+
+  // set and save
+  setEntry(pid, day, next);
+}
+
+function setEntry(pid, dayIndex, obj){
+  if(!weekData.entries) weekData.entries = {};
+  if(!weekData.entries[pid]) weekData.entries[pid] = {};
+  weekData.entries[pid][dayIndex] = obj;
+  weekData.updatedAt = Date.now();
+
+  // optimistic render
+  renderWeek();
+
+  // log + save
+  logAction("setEntry", { pid, dayIndex, obj });
+  saveWeek();
+}
+
+/* =========================
+   CRUD PEOPLE
+========================= */
+function addPerson(){
+  if(!canEdit()) return alert("Нет прав на редактирование (нужен Мл.Админ+).");
+  const nick = document.getElementById("nickname").value.trim();
+  const role = parseInt(document.getElementById("role").value,10);
+  if(!nick) return alert("Введите ник.");
+
+  const id = "p_" + Date.now();
+
+  weekData.people.push({ id, nick, role });
+  weekData.updatedAt = Date.now();
+
+  logAction("addPerson", { id, nick, role });
+  saveWeek();
+  document.getElementById("nickname").value = "";
+}
+
+/* =========================
+   SAVE / CLEAR
+========================= */
+async function saveWeek(){
+  if(!currentWeekKey) return alert("Сначала выбери начало недели.");
+  if(!canEdit()) return alert("Нет прав на сохранение.");
+
+  try{
+    await db.ref("activity/" + currentWeekKey).set(weekData);
+    await loadWeeksList();
+  }catch(e){
+    alert("Ошибка сохранения: " + e.message);
+  }
+}
+
+async function clearWeek(){
+  if(!currentWeekKey) return;
+  if(!confirm("Очистить данные недели?")) return;
+  if(!canManageUsers() && currentRole < 7){
+    return alert("Очистка недели доступна только Ст.Админу+.");
+  }
+  try{
+    await db.ref("activity/" + currentWeekKey).remove();
+    await db.ref("logs/" + currentWeekKey).remove();
+    logAction("clearWeek", { weekKey: currentWeekKey });
+  }catch(e){
+    alert("Ошибка очистки: " + e.message);
+  }
+}
+
+/* =========================
+   EXPORT (XLS)
+========================= */
 function exportToExcel(){
- let table = document.getElementById("mainTable").outerHTML;
- let blob = new Blob([table],{type:"application/vnd.ms-excel"});
- let a=document.createElement("a");
- a.href=URL.createObjectURL(blob);
- a.download="ActivityStats.xls";
- a.click();
+  let table = document.getElementById("mainTable").outerHTML;
+  let blob = new Blob([table], {type:"application/vnd.ms-excel"});
+  let a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `Activity_${currentWeekKey || "week"}.xls`;
+  a.click();
 }
+
+/* =========================
+   LOGGING
+========================= */
+function logAction(action, payload){
+  if(!canEdit()) return;
+  if(!currentWeekKey) return;
+
+  const ref = db.ref("logs/" + currentWeekKey).push();
+  ref.set({
+    ts: Date.now(),
+    uid: currentUser?.uid || null,
+    nick: currentNick,
+    action,
+    payload: payload || null
+  }).catch(()=>{});
+}
+
+/* =========================
+   USERS MANAGEMENT (ROLE)
+========================= */
+function openUsersPanel(){
+  if(!canManageUsers()) return alert("Нужен Ст.Админ+.");
+  document.getElementById("usersModal").style.display = "block";
+  refreshUsersList();
+}
+function closeUsersPanel(){
+  document.getElementById("usersModal").style.display = "none";
+}
+
+async function refreshUsersList(){
+  const tbody = document.getElementById("usersList");
+  tbody.innerHTML = "";
+  const snap = await db.ref("users").get();
+  if(!snap.exists()) return;
+  const users = snap.val();
+  const rows = Object.entries(users).map(([uid, u])=>({uid, ...u}))
+    .sort((a,b)=>(b.role||0)-(a.role||0));
+
+  for(const u of rows){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="padding:10px; border-top:1px solid rgba(27,42,85,.5); font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${escapeHtml(u.uid)}</td>
+      <td style="padding:10px; border-top:1px solid rgba(27,42,85,.5);">${escapeHtml(u.nickname || "")}</td>
+      <td style="padding:10px; border-top:1px solid rgba(27,42,85,.5); text-align:center;">
+        <span class="badge ${ROLE_BADGE_CLASS(u.role||0)}">${ROLE_NAMES[u.role||0] ?? (u.role||0)}</span>
+      </td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+async function setUserRole(){
+  if(!canManageUsers()) return alert("Нужен Ст.Админ+.");
+  const uid = document.getElementById("u_uid").value.trim();
+  const nick = document.getElementById("u_nick").value.trim();
+  const role = parseInt(document.getElementById("u_role").value,10);
+
+  if(!uid) return alert("Введи UID пользователя.");
+
+  try{
+    await db.ref("users/" + uid).update({
+      nickname: nick || null,
+      role: role,
+      updatedAt: Date.now()
+    });
+    logAction("setUserRole", { uid, role, nickname: nick || null });
+    refreshUsersList();
+    alert("Готово.");
+  }catch(e){
+    alert("Ошибка: " + e.message);
+  }
+}
+
+/* =========================
+   INITIAL EMPTY TABLE
+========================= */
+renderEmptyTable();
 </script>
 </body>
 </html>
