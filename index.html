@@ -6,32 +6,34 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --border: #334155; --text: #f1f5f9; --accent: #3b82f6; --success: #10b981; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; margin: 0; }
-        .card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 16px; max-width: 1500px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { text-align: center; color: white; margin-bottom: 25px; }
-        .toolbar { display: flex; gap: 15px; margin-bottom: 25px; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; border: 1px solid var(--accent); align-items: flex-end; flex-wrap: wrap; }
-        .input-group { display: flex; flex-direction: column; gap: 5px; }
-        .input-group label { font-size: 11px; color: var(--accent); font-weight: bold; }
-        input, select { background: #0f172a; color: white; border: 1px solid var(--border); padding: 10px; border-radius: 8px; outline: none; }
-        button { cursor: pointer; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; }
-        .btn-add { background: var(--accent); color: white; }
-        .btn-clear { background: #ef4444; color: white; margin-left: auto; }
-        .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; background: #1e293b; }
-        th, td { border: 1px solid var(--border); padding: 12px; text-align: center; min-width: 120px; }
-        .sticky-col { position: sticky; left: 0; background: #111827; z-index: 5; text-align: left; font-weight: bold; border-right: 2px solid var(--border); }
-        .cell-input { width: 65px; background: rgba(255,255,255,0.05); border: 1px solid transparent; color: white; text-align: center; padding: 6px; border-radius: 4px; }
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; text-transform: uppercase; font-weight: 800; color: white; }
-        .role-7 { background: var(--success); } .role-8 { background: var(--accent); } .role-1 { background: #14b8a6; }
-        .sum-row { background: #0f172a !important; color: #facc15; font-weight: bold; font-size: 1.1em; }
-        .admin-only { display: none; }
-        body.is-admin .admin-only { display: flex !important; }
-        body.not-admin .cell-input { pointer-events: none; background: transparent; border: none; }
+        :root { --bg:#0f172a; --card:#1e293b; --border:#334155; --text:#f1f5f9; --accent:#3b82f6; --success:#10b981; --warn:#facc15; --danger:#ef4444; }
+        body { background:var(--bg); color:var(--text); font-family:sans-serif; margin:0; padding:20px; }
+        .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:25px; max-width:1500px; margin:auto; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
+        h2 { text-align:center; color:white; margin-bottom:25px; }
+        .toolbar { display:flex; flex-wrap:wrap; gap:15px; margin-bottom:25px; padding:20px; border:1px solid var(--accent); background:rgba(0,0,0,0.2); border-radius:12px; align-items:flex-end; }
+        .input-group { display:flex; flex-direction:column; gap:5px; }
+        .input-group label { font-size:11px; font-weight:bold; color:var(--accent); }
+        input,select { background:#0f172a; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; outline:none; }
+        input:hover { border-color:var(--accent); }
+        button { cursor:pointer; border:none; border-radius:8px; padding:10px 20px; font-weight:600; transition:.2s; }
+        .btn-add { background:var(--accent); color:white; }
+        .btn-clear { background:var(--danger); color:white; margin-left:auto; }
+        .btn-refresh { background:var(--success); color:white; }
+        .btn-export { background:var(--warn); color:black; }
+        .table-container { overflow-x:auto; border-radius:12px; border:1px solid var(--border); }
+        table { width:100%; border-collapse:collapse; background:#1e293b; user-select:none; }
+        th,td { border:1px solid var(--border); text-align:center; padding:12px; min-width:120px; }
+        .sticky-col { position:sticky; left:0; background:#111827; z-index:5; font-weight:bold; border-right:2px solid var(--border); text-align:left; }
+        .cell-input { width:65px; background:rgba(255,255,255,0.05); border:1px solid transparent; color:white; text-align:center; padding:6px; border-radius:4px; transition:0.15s; }
+        .cell-input:focus { border-color:var(--accent); background:rgba(59,130,246,0.2); outline:none; }
+        .badge { padding:4px 8px; border-radius:6px; font-size:11px; text-transform:uppercase; font-weight:800; color:white; }
+        .role-7 { background:var(--success); } .role-8 { background:var(--accent); } .role-1 { background:#14b8a6; }
+        .sum-row { background:#0f172a !important; color:var(--warn); font-weight:bold; font-size:1.05em; }
+        body.is-admin .admin-only { display:flex !important; }
+        body.not-admin .cell-input { pointer-events:none; background:transparent; border:none; }
     </style>
 </head>
 <body class="not-admin">
-
 <div class="card">
     <h2 id="header">Учет активности состава</h2>
 
@@ -53,7 +55,9 @@
             </select>
         </div>
         <button class="btn-add" onclick="addPerson()">＋ Добавить сотрудника</button>
-        <button class="btn-clear" onclick="clearData()">🗑 Очистить таблицу</button>
+        <button class="btn-refresh" onclick="refresh()">🔄 Обновить</button>
+        <button class="btn-export" onclick="exportToExcel()">📥 Export</button>
+        <button class="btn-clear" onclick="clearData()">🗑 Очистить</button>
     </div>
 
     <div class="table-container" id="tableWrapper">
@@ -63,112 +67,131 @@
                 <tr id="nickRow"><th class="sticky-col">Никнейм</th></tr>
             </thead>
             <tbody id="bodyRows"></tbody>
-            <tfoot>
-                <tr class="sum-row" id="sumRow"><td class="sticky-col">ИТОГО СКРИНОВ</td></tr>
-            </tfoot>
+            <tfoot><tr class="sum-row" id="sumRow"><td class="sticky-col">ИТОГО</td></tr></tfoot>
         </table>
     </div>
 </div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
-        authDomain: "aktiv-d4d72.firebaseapp.com",
-        databaseURL: "https://aktiv-d4d72-default-rtdb.firebaseio.com",
-        projectId: "aktiv-d4d72",
-        storageBucket: "aktiv-d4d72.firebasestorage.app",
-        messagingSenderId: "714513253285",
-        appId: "1:714513253285:web:c76d9fec18593db9a55e4c"
-    };
+const firebaseConfig = {
+ apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
+ authDomain: "aktiv-d4d72.firebaseapp.com",
+ databaseURL: "https://aktiv-d4d72-default-rtdb.firebaseio.com",
+ projectId: "aktiv-d4d72",
+ storageBucket: "aktiv-d4d72.firebasestorage.app",
+ messagingSenderId: "714513253285",
+ appId: "1:714513253285:web:c76d9fec18593db9a55e4c"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+const OWNER = "SIPRISE";
+let login = prompt("Введите ваш никнейм:")?.trim();
+if (login && login.toUpperCase() === OWNER.toUpperCase()) {
+ document.body.classList.replace('not-admin', 'is-admin');
+ document.getElementById("header").innerText += " [ROOT]";
+}
 
-    const OWNER = "SIPRISE";
-    let login = prompt("Введите ваш никнейм:");
-    if (login && login.toUpperCase() === OWNER.toUpperCase()) {
-        document.body.classList.replace('not-admin', 'is-admin');
-        document.getElementById('header').innerText += " [ROOT]";
-    }
+db.ref("final_screen_system").on("value", snap => {
+ const data = snap.val();
+ if (data) {
+   document.getElementById("tableWrapper").innerHTML = data.html;
+   document.getElementById("weekStart").value = data.date || "";
+   if (document.body.classList.contains("is-admin")) rebind();
+ }
+});
 
-    db.ref('final_screen_system').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            document.getElementById('tableWrapper').innerHTML = data.html;
-            document.getElementById('weekStart').value = data.date || '';
-            if(document.body.classList.contains('is-admin')) rebind();
-        }
-    });
+function generateRows() {
+ const start = document.getElementById("weekStart").value;
+ if (!start) return;
+ const body = document.getElementById("bodyRows");
+ const base = new Date(start);
+ let html = "";
+ for (let i = 0; i < 7; i++) {
+   const d = new Date(base); d.setDate(base.getDate() + i);
+   const fmt = d.toLocaleDateString("ru-RU",{weekday:"short",day:"numeric"});
+   html += `<tr><td class='sticky-col' style='color:var(--accent)'>${fmt}</td></tr>`;
+ }
+ ["📊 Онлайн","🚫 Муты","🔨 Баны","📩 Тикеты"].forEach(s => {
+   html += `<tr><td class='sticky-col' style='color:#94a3b8'>${s}</td></tr>`;
+ });
+ body.innerHTML = html;
+ save();
+}
 
-    function generateRows() {
-        const start = document.getElementById("weekStart").value;
-        const body = document.getElementById("bodyRows");
-        const date = new Date(start);
-        let html = "";
-        for (let i = 0; i < 7; i++) {
-            const d = new Date(date); d.setDate(date.getDate() + i);
-            const fmt = d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' });
-            html += `<tr class="day-row"><td class="sticky-col" style="color:var(--accent)">${fmt}</td></tr>`;
-        }
-        ["📊 Онлайн", "🚫 Муты", "🔨 Баны", "📩 Тикеты"].forEach(s => {
-            html += `<tr class="stat-row"><td class="sticky-col" style="color:#94a3b8">${s}</td></tr>`;
-        });
-        body.innerHTML = html;
-        save();
-    }
+function addPerson() {
+ const nick = document.getElementById("nickname").value.trim();
+ const roleSel = document.getElementById("role");
+ if (!nick) return alert("Введите ник");
+ const id = "c" + Date.now();
 
-    function addPerson() {
-        const nick = document.getElementById("nickname").value;
-        const roleSel = document.getElementById("role");
-        if (!nick) return;
-        const id = "c" + Date.now();
-        document.getElementById("roleRow").innerHTML += `<td><span class="badge role-${roleSel.value}">${roleSel.selectedOptions[0].text}</span></td>`;
-        document.getElementById("nickRow").innerHTML += `<td>${nick}</td>`;
+ document.getElementById("roleRow").innerHTML += `<td><span class='badge role-${roleSel.value}'>${roleSel.selectedOptions[0].text}</span></td>`;
+ document.getElementById("nickRow").innerHTML += `<td title='${nick}'>${nick}</td>`;
 
-        const rows = document.getElementById("bodyRows").children;
-        for (let row of rows) {
-            row.innerHTML += `<td><input type="number" value="0" class="cell-input ${id}" oninput="calculate()"></td>`;
-        }
-        document.getElementById("sumRow").innerHTML += `<td id="sum_${id}">0</td>`;
-        save();
-    }
+ document.querySelectorAll("#bodyRows tr").forEach(row=>{
+   row.innerHTML += `<td><input type='number' value='0' class='cell-input ${id}' oninput='calculate()'></td>`;
+ });
+ document.getElementById("sumRow").innerHTML += `<td id='sum_${id}'>0</td>`;
+ save();
+}
 
-    function calculate() {
-        const nickRow = document.getElementById("nickRow");
-        const columns = nickRow.cells.length - 1;
-        const bodyRows = document.getElementById("bodyRows").rows;
+function calculate() {
+ const nickRow = document.getElementById("nickRow");
+ const columns = nickRow.cells.length - 1;
+ const bodyRows = document.getElementById("bodyRows").rows;
 
-        for(let i = 1; i <= columns; i++) {
-            const idClass = bodyRows[0].cells[i].querySelector('input').classList[1];
-            let totalScreens = 0;
-            
-            // СУММИРУЕМ ТОЛЬКО ПЕРВЫЕ 7 СТРОК (ДНИ НЕДЕЛИ)
-            for (let j = 0; j < 7; j++) {
-                const val = parseInt(bodyRows[j].cells[i].querySelector('input').value) || 0;
-                totalScreens += val;
-            }
-            
-            document.getElementById("sum_" + idClass).innerText = totalScreens;
-        }
-        save();
-    }
+ for(let i=1;i<=columns;i++){
+   const idClass = bodyRows[0].cells[i]?.querySelector("input")?.classList[1];
+   if(!idClass) continue;
+   let total = 0;
+   for(let j=0;j<7;j++)
+     total += parseInt(bodyRows[j].cells[i].querySelector("input").value)||0;
+   document.getElementById("sum_"+idClass).innerText = total;
+ }
+ save();
+}
 
-    function save() {
-        if (!document.body.classList.contains('is-admin')) return;
-        document.querySelectorAll('.cell-input').forEach(i => i.setAttribute('value', i.value));
-        db.ref('final_screen_system').set({
-            html: document.getElementById('tableWrapper').innerHTML,
-            date: document.getElementById('weekStart').value
-        });
-    }
+function save() {
+ if (!document.body.classList.contains("is-admin")) return;
+ document.querySelectorAll(".cell-input").forEach(i => i.setAttribute("value",i.value));
+ db.ref("final_screen_system").set({
+   html: document.getElementById("tableWrapper").innerHTML,
+   date: document.getElementById("weekStart").value,
+   updatedBy: login,
+   time: new Date().toLocaleString()
+ });
+}
 
-    function rebind() {
-        document.querySelectorAll('.cell-input').forEach(i => i.oninput = calculate);
-    }
+function rebind() {
+ document.querySelectorAll(".cell-input").forEach(i => i.oninput = calculate);
+}
 
-    function clearData() {
-        if(confirm("Очистить таблицу?")) db.ref('final_screen_system').remove();
-    }
+function refresh() {
+ db.ref("final_screen_system").once("value").then(snap=>{
+   const data = snap.val();
+   if(data){
+     document.getElementById("tableWrapper").innerHTML=data.html;
+     rebind();
+   }
+ });
+}
+
+function clearData() {
+ if(confirm("Очистить таблицу?")){
+   db.ref("final_screen_system").remove();
+   location.reload();
+ }
+}
+
+// экспорт в xlsx
+function exportToExcel(){
+ let table = document.getElementById("mainTable").outerHTML;
+ let blob = new Blob([table],{type:"application/vnd.ms-excel"});
+ let a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="ActivitySystem.xls";
+ a.click();
+}
 </script>
 </body>
 </html>
