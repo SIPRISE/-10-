@@ -2,44 +2,55 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Activity Cloud System PRO</title>
+    <title>Activity Cloud Dashboard</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --border: #334155; --text: #f1f5f9; --accent: #3b82f6; --success: #10b981; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; margin: 0; }
-        .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; max-width: 1400px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .toolbar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border: 1px solid var(--border); align-items: flex-end; }
-        .input-group { display: flex; flex-direction: column; gap: 5px; }
-        .input-group label { font-size: 11px; color: var(--accent); font-weight: bold; }
-        input, select { background: #0f172a; color: white; border: 1px solid var(--border); padding: 8px; border-radius: 6px; outline: none; }
-        button { cursor: pointer; border: none; border-radius: 6px; padding: 10px 18px; font-weight: 600; transition: 0.2s; }
-        .btn-add { background: var(--accent); color: white; }
-        .btn-clear { background: #ef4444; color: white; margin-left: auto; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 20px; margin: 0; min-height: 100vh; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 16px; max-width: 1400px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { text-align: center; background: linear-gradient(to right, #60a5fa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 25px; font-size: 2rem; }
         
+        /* Панель управления (Теперь видна всем сразу) */
+        .toolbar { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 25px; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; border: 1px solid var(--border); align-items: flex-end; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { font-size: 11px; color: var(--accent); font-weight: bold; text-transform: uppercase; }
+        
+        input, select { background: #0f172a; color: white; border: 1px solid var(--border); padding: 10px; border-radius: 8px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--accent); }
+        button { cursor: pointer; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; transition: 0.2s; }
+        .btn-add { background: var(--accent); color: white; }
+        .btn-add:hover { background: #2563eb; }
+        .btn-clear { background: #ef4444; color: white; font-size: 12px; margin-top: 15px; opacity: 0.8; }
+        .btn-clear:hover { opacity: 1; }
+        
+        /* Таблица */
         .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
         table { width: 100%; border-collapse: collapse; background: #1e293b; }
-        th, td { border: 1px solid var(--border); padding: 10px; text-align: center; min-width: 110px; }
+        th, td { border: 1px solid var(--border); padding: 12px; text-align: center; min-width: 110px; }
         .sticky-col { position: sticky; left: 0; background: #111827; z-index: 5; text-align: left; font-weight: bold; border-right: 2px solid var(--border); }
-        .cell-input { width: 65px; background: rgba(255,255,255,0.05); border: 1px solid transparent; color: white; text-align: center; padding: 5px; border-radius: 4px; }
-        .cell-input:focus { border-color: var(--accent); background: rgba(0,0,0,0.5); }
+        .cell-input { width: 65px; background: rgba(255,255,255,0.05); border: 1px solid transparent; color: white; text-align: center; padding: 6px; border-radius: 4px; outline: none; }
+        .cell-input:focus { border-color: var(--accent); background: rgba(0,0,0,0.4); }
         
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: white; }
-        .role-1 {background:#14b8a6} .role-2 {background:#f97316} .role-3 {background:#38bdf8} 
-        .role-6 {background:#a855f7} .role-8 {background:var(--accent)} .role-7 {background:var(--success)}
+        /* Роли */
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; text-transform: uppercase; font-weight: 800; color: white; }
+        .role-1 { background: #14b8a6; } /* Хелпер */
+        .role-2 { background: #f97316; } /* Ст. Хелпер */
+        .role-3 { background: #38bdf8; } /* Мл. Модератор */
+        .role-6 { background: #a855f7; } /* Мл. Админ */
+        .role-8 { background: var(--accent); } /* Админ */
+        .role-7 { background: var(--success); } /* Ст. Администратор */
         
         .sum-row { background: #0f172a !important; color: #facc15; font-weight: bold; }
-        body.viewer .admin-only { display: none !important; }
-        body.viewer .cell-input { pointer-events: none; background: transparent; border: none; }
-        body.viewer input::-webkit-outer-spin-button, body.viewer input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
-<body class="viewer">
+<body>
 
 <div class="card">
-    <h2 style="text-align:center; margin-bottom: 20px;">Система учета активности состава</h2>
-    
-    <div class="toolbar admin-only">
+    <h2>Учет активности состава</h2>
+
+    <div class="toolbar">
         <div class="input-group">
             <label>Начало недели</label>
             <input type="date" id="weekStart" onchange="generateRows()">
@@ -51,19 +62,18 @@
         <div class="input-group">
             <label>Должность</label>
             <select id="role">
-                <option value="1">Хелпер</option>
-                <option value="2">Ст. Хелпер</option>
-                <option value="3">Мл. Модератор</option>
-                <option value="6">Мл. Администратор</option>
-                <option value="8">Администратор</option>
                 <option value="7">Старший Администратор</option>
+                <option value="8">Администратор</option>
+                <option value="6">Мл. Администратор</option>
+                <option value="3">Мл. Модератор</option>
+                <option value="2">Ст. Хелпер</option>
+                <option value="1">Хелпер</option>
             </select>
         </div>
         <button class="btn-add" onclick="addPerson()">＋ Добавить сотрудника</button>
-        <button class="btn-clear" onclick="clearData()">🗑 Сброс всей базы</button>
     </div>
 
-    <div id="tableWrapper">
+    <div class="table-container" id="tableWrapper">
         <table id="mainTable">
             <thead>
                 <tr id="roleRow"><th class="sticky-col">Должность</th></tr>
@@ -75,10 +85,14 @@
             </tfoot>
         </table>
     </div>
+
+    <div style="text-align: right;">
+        <button class="btn-clear" onclick="clearData()">🗑 Полный сброс всей базы</button>
+    </div>
 </div>
 
 <script>
-    // ТВОЙ FIREBASE CONFIG
+    // ТВОЙ КОНФИГ FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
         authDomain: "aktiv-d4d72.firebaseapp.com",
@@ -92,16 +106,11 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Зарплаты
+    // Зарплаты (можно менять цифры тут)
     const salaries = { 1:70, 2:90, 3:110, 6:180, 8:180, 7:215 };
 
-    // Проверка на админа
-    if (new URLSearchParams(window.location.search).get('admin') === 'true') {
-        document.body.classList.remove('viewer');
-    }
-
-    // Загрузка из облака
-    db.ref('shared_table_v2').on('value', (snapshot) => {
+    // Загрузка данных в реальном времени
+    db.ref('global_table').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
             document.getElementById('tableWrapper').innerHTML = data.html;
@@ -117,17 +126,19 @@
         const date = new Date(start);
         let html = "";
 
+        // Дни недели
         for (let i = 0; i < 7; i++) {
             const d = new Date(date);
             d.setDate(date.getDate() + i);
             const fmt = d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' });
             html += `<tr><td class="sticky-col" style="color:var(--accent)">${fmt}</td></tr>`;
         }
+        // Доп. статистика
         ["📊 Онлайн", "🚫 Муты", "🔨 Баны", "📩 Тикеты"].forEach(s => {
             html += `<tr><td class="sticky-col" style="color:#94a3b8; font-style:italic; font-weight:normal">${s}</td></tr>`;
         });
         body.innerHTML = html;
-        sync();
+        save();
     }
 
     function addPerson() {
@@ -151,30 +162,37 @@
     }
 
     function calculate() {
-        const sumRow = document.getElementById("sumRow");
-        const columns = document.getElementById("nickRow").cells.length - 1;
+        const nickRow = document.getElementById("nickRow");
+        if (!nickRow) return;
+        const columns = nickRow.cells.length - 1;
         
-        const nickCells = document.getElementById("nickRow").cells;
         for(let i = 1; i <= columns; i++) {
-            const inputClass = document.getElementById("bodyRows").rows[0].cells[i].querySelector('input').classList[1];
+            const bodyRow = document.getElementById("bodyRows").rows[0];
+            if (!bodyRow || !bodyRow.cells[i]) continue;
+            
+            const input = bodyRow.cells[i].querySelector('input');
+            if (!input) continue;
+
+            const inputClass = input.classList[1];
             const inputs = document.querySelectorAll('.' + inputClass);
             let totalActivity = 0;
             inputs.forEach(inp => totalActivity += (parseInt(inp.value) || 0));
             
-            const role = inputs[0].getAttribute('data-role');
+            const role = input.getAttribute('data-role');
             const salaryPerUnit = salaries[role] || 0;
             const finalSalary = totalActivity * salaryPerUnit;
             
             const sumCell = document.getElementById("sum_" + inputClass);
             if(sumCell) sumCell.innerText = finalSalary.toLocaleString() + " $";
         }
-        sync();
+        save();
     }
 
-    function sync() {
-        if (document.body.classList.contains('viewer')) return;
+    function save() {
+        // Прописываем текущие значения в HTML перед сохранением в базу
         document.querySelectorAll('.cell-input').forEach(i => i.setAttribute('value', i.value));
-        db.ref('shared_table_v2').set({
+        
+        db.ref('global_table').set({
             html: document.getElementById('tableWrapper').innerHTML,
             date: document.getElementById('weekStart').value
         });
@@ -185,7 +203,10 @@
     }
 
     function clearData() {
-        if(confirm("Удалить ВСЮ таблицу?")) db.ref('shared_table_v2').remove();
+        if(confirm("ВНИМАНИЕ! Это удалит данные у ВСЕХ пользователей. Продолжить?")) {
+            db.ref('global_table').remove();
+            location.reload();
+        }
     }
 </script>
 </body>
