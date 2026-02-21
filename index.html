@@ -2,181 +2,159 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activity Dashboard Pro</title>
+    <title>Activity Cloud System</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    
     <style>
-        :root {
-            --bg: #0f172a; --card: #1e293b; --border: #334155;
-            --text: #f1f5f9; --text-muted: #94a3b8; --accent: #3b82f6;
-            --success: #10b981;
-        }
-        body {
-            margin: 0; font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at top right, #1e293b, #0f172a);
-            color: var(--text); padding: 20px; min-height: 100vh;
-        }
-        .container { max-width: 1400px; margin: 0 auto; }
-        h2 { text-align: center; font-size: 2rem; background: linear-gradient(to right, #60a5fa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
-        .toolbar { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; background: rgba(15, 23, 42, 0.5); padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid var(--border); align-items: flex-end; }
-        .input-group { display: flex; flex-direction: column; gap: 8px; }
-        .input-group label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
-        input, select { background: #0f172a; border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: white; outline: none; }
+        :root { --bg: #0f172a; --card: #1e293b; --border: #334155; --text: #f1f5f9; --accent: #3b82f6; --success: #10b981; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 20px; min-height: 100vh; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { text-align: center; background: linear-gradient(to right, #60a5fa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
+        
+        .toolbar { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 20px 0; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; }
+        input, select { background: #0f172a; color: white; border: 1px solid var(--border); padding: 10px; border-radius: 8px; outline: none; }
         button { cursor: pointer; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; transition: 0.2s; }
         .btn-add { background: var(--accent); color: white; }
-        .btn-clear { background: #ef4444; color: white; }
+        .btn-clear { background: #ef4444; color: white; margin-top: 10px; }
+        
         .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
-        table { border-collapse: separate; border-spacing: 0; width: 100%; background: #1e293b; }
-        th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
-        .sticky-col { position: sticky; left: 0; background: #111827 !important; z-index: 5; min-width: 160px; text-align: left; }
-        .cell-input { width: 65px; background: rgba(0,0,0,0.3); border: 1px solid transparent; text-align: center; color: white; border-radius: 4px; padding: 5px; }
-        .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 10px; text-transform: uppercase; font-weight: 800; color: white; }
+        table { width: 100%; border-collapse: collapse; background: #1e293b; }
+        th, td { border: 1px solid var(--border); padding: 12px; text-align: center; }
+        .cell-input { width: 55px; background: rgba(0,0,0,0.3); border: none; color: white; text-align: center; border-radius: 4px; padding: 5px; }
         
-        /* Цвета ролей */
-        .role-1{background:#14b8a6} .role-2{background:#f97316} .role-3{background:#38bdf8} 
-        .role-4{background:#f59e0b} .role-5{background:#ef4444} .role-6{background:#a855f7} 
-        .role-8{background:#3b82f6} .role-7{background:var(--success)} /* Старший Админ теперь зеленый и важный */
-        
-        .sum-row { background: #0f172a !important; color: #facc15; font-weight: bold; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; text-transform: uppercase; font-weight: 800; color: white; }
+        .role-7 { background: var(--success); } /* Ст. Админ */
+        .role-8 { background: var(--accent); }  /* Админ */
+        .role-1 { background: #14b8a6; }
+
+        /* По умолчанию прячем управление (Режим читателя) */
+        body.viewer .admin-only { display: none !important; }
+        body.viewer .cell-input { pointer-events: none; background: transparent; }
     </style>
 </head>
-<body>
+<body class="viewer">
 
-<div class="container">
-    <h2>Система учета активности</h2>
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <button class="btn-clear" onclick="clearAllData()">🗑 Сбросить таблицу</button>
-            <span style="color: var(--success); font-size: 13px;">● Автосохранение включено</span>
-        </div>
+<div class="card">
+    <h2 title="Нажми 3 раза для входа">Система учета состава</h2>
+    <p id="status" style="text-align: center; font-size: 12px; color: var(--success);">☁ Облачная синхронизация активна</p>
 
-        <div class="toolbar">
-            <div class="input-group">
-                <label>Начало недели</label>
-                <input type="date" id="weekStart" onchange="generateRows()">
-            </div>
-            <div class="input-group">
-                <label>Никнейм</label>
-                <input type="text" id="nickname" placeholder="Nickname">
-            </div>
-            <div class="input-group">
-                <label>Должность</label>
-                <select id="role">
-                    <option value="1">Хелпер</option>
-                    <option value="2">Ст. Хелпер</option>
-                    <option value="3">Мл. Модератор</option>
-                    <option value="4">Модератор</option>
-                    <option value="5">Ст. Модератор</option>
-                    <option value="6">Мл. Администратор</option>
-                    <option value="8">Администратор</option>
-                    <option value="7">Старший Администратор</option>
-                </select>
-            </div>
-            <button class="btn-add" onclick="addPerson()">＋ Добавить сотрудника</button>
-        </div>
+    <div class="toolbar admin-only">
+        <input type="date" id="weekStart" onchange="generateRows()">
+        <input type="text" id="nickname" placeholder="Никнейм">
+        <select id="role">
+            <option value="1">Хелпер</option>
+            <option value="6">Мл. Администратор</option>
+            <option value="8">Администратор</option>
+            <option value="7">Старший Администратор</option>
+        </select>
+        <button class="btn-add" onclick="addPerson()">＋ Добавить сотрудника</button>
+        <button class="btn-clear" onclick="clearData()">🗑 Полный сброс базы</button>
+    </div>
 
-        <div class="table-container" id="tableWrapper">
-            <table id="activityTable">
-                <thead>
-                    <tr id="roleRow"><th class="sticky-col">Должность</th></tr>
-                    <tr id="nickRow"><th class="sticky-col">Никнейм</th></tr>
-                </thead>
-                <tbody id="bodyRows"></tbody>
-                <tfoot>
-                    <tr class="sum-row" id="sumRow"><td class="sticky-col">ИТОГО</td></tr>
-                </tfoot>
-            </table>
-        </div>
+    <div class="table-container" id="tableWrapper">
+        <table id="activityTable">
+            <thead>
+                <tr id="roleRow"><th style="text-align:left">Должность</th></tr>
+                <tr id="nickRow"><th style="text-align:left">Никнейм</th></tr>
+            </thead>
+            <tbody id="bodyRows"></tbody>
+        </table>
     </div>
 </div>
 
 <script>
-    // Загрузка при открытии
-    window.onload = () => {
-        const savedData = localStorage.getItem('my_dashboard_v3');
-        if (savedData) {
-            const data = JSON.parse(savedData);
-            document.getElementById('tableWrapper').innerHTML = data.html;
-            document.getElementById('weekStart').value = data.date || '';
-            rebindEvents(); // Важно: возвращаем жизнь кнопкам и полям
-        }
+    // Твой конфиг
+    const firebaseConfig = {
+        apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
+        authDomain: "aktiv-d4d72.firebaseapp.com",
+        databaseURL: "https://aktiv-d4d72-default-rtdb.firebaseio.com",
+        projectId: "aktiv-d4d72",
+        storageBucket: "aktiv-d4d72.firebasestorage.app",
+        messagingSenderId: "714513253285",
+        appId: "1:714513253285:web:c76d9fec18593db9a55e4c",
+        measurementId: "G-7ZKG68DJJH"
     };
 
-    function generateRows() {
-        const start = document.getElementById("weekStart").value;
-        if (!start) return;
-        const body = document.getElementById("bodyRows");
-        body.innerHTML = "";
-        const date = new Date(start);
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        for (let i = 0; i < 7; i++) {
-            const d = new Date(date);
-            d.setDate(date.getDate() + i);
-            const formatted = d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' });
-            body.innerHTML += `<tr><td class="sticky-col" style="color:var(--accent)">${formatted}</td></tr>`;
+    // Загрузка данных из облака
+    db.ref('shared_table').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            document.getElementById('tableWrapper').innerHTML = data.html;
+            document.getElementById('weekStart').value = data.date || '';
+            rebind();
         }
-        ["📊 Онлайн", "🚫 Муты", "🔨 Баны", "📩 Тикеты"].forEach(stat => {
-            body.innerHTML += `<tr><td class="sticky-col" style="font-style:italic; color:var(--text-muted)">${stat}</td></tr>`;
-        });
-        save();
-    }
+    });
 
     function addPerson() {
         const nick = document.getElementById("nickname").value;
         const role = document.getElementById("role");
         if (!nick) return alert("Введите ник!");
 
-        const id = "col_" + Date.now(); // Уникальный ID колонки
-
+        const colID = "col_" + Date.now();
         document.getElementById("roleRow").innerHTML += `<td><span class="badge role-${role.value}">${role.selectedOptions[0].text}</span></td>`;
         document.getElementById("nickRow").innerHTML += `<td>${nick}</td>`;
 
         const rows = document.getElementById("bodyRows").children;
         for (let row of rows) {
-            row.innerHTML += `<td><input type="number" value="0" class="cell-input ${id}" oninput="calculate()"></td>`;
+            row.innerHTML += `<td><input type="number" value="0" class="cell-input ${colID}" oninput="send()"></td>`;
         }
-        document.getElementById("sumRow").innerHTML += `<td id="sum_${id}">0</td>`;
+        send();
+    }
+
+    function generateRows() {
+        const start = document.getElementById("weekStart").value;
+        const body = document.getElementById("bodyRows");
+        body.innerHTML = "";
+        const date = new Date(start);
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(date);
+            d.setDate(date.getDate() + i);
+            const fmt = d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' });
+            body.innerHTML += `<tr><td style="text-align:left; color:var(--accent)">${fmt}</td></tr>`;
+        }
+        send();
+    }
+
+    function send() {
+        if (document.body.classList.contains('viewer')) return;
         
-        document.getElementById("nickname").value = "";
-        save();
-    }
-
-    function calculate() {
-        // Записываем значения в атрибут value, чтобы они попали в innerHTML для сохранения
-        const inputs = document.querySelectorAll('.cell-input');
-        inputs.forEach(inp => {
+        // Впечатываем значения в атрибут value перед отправкой
+        document.querySelectorAll('.cell-input').forEach(inp => {
             inp.setAttribute('value', inp.value);
-            
-            // Считаем сумму для колонки этого инпута
-            const colClass = inp.classList[1];
-            let total = 0;
-            document.querySelectorAll('.' + colClass).forEach(i => total += (parseInt(i.value) || 0));
-            document.getElementById('sum_' + colClass).textContent = total;
         });
-        save();
-    }
 
-    function save() {
-        const data = {
+        db.ref('shared_table').set({
             html: document.getElementById('tableWrapper').innerHTML,
             date: document.getElementById('weekStart').value
-        };
-        localStorage.setItem('my_dashboard_v3', JSON.stringify(data));
-    }
-
-    function rebindEvents() {
-        document.querySelectorAll('.cell-input').forEach(inp => {
-            inp.oninput = calculate;
         });
     }
 
-    function clearAllData() {
-        if (confirm("ВНИМАНИЕ! Это полностью удалит таблицу и всех сотрудников. Продолжить?")) {
-            localStorage.removeItem('my_dashboard_v3');
+    function rebind() {
+        document.querySelectorAll('.cell-input').forEach(inp => {
+            inp.oninput = send;
+        });
+    }
+
+    function clearData() {
+        if(confirm("Удалить ВСЕ данные у всех пользователей?")) {
+            db.ref('shared_table').remove();
             location.reload();
         }
     }
-</script>
 
+    // СЕКРЕТНЫЙ ВХОД: нажми на заголовок 3 раза
+    let secret = 0;
+    document.querySelector('h2').onclick = () => {
+        secret++;
+        if (secret === 3) {
+            document.body.classList.remove('viewer');
+            alert("Режим администратора включен! Теперь ты можешь менять данные.");
+        }
+    };
+</script>
 </body>
 </html>
