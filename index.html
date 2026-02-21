@@ -10,86 +10,46 @@
 
   <style>
     :root{
-      --bg:#060812;
-      --bg2:#0a1026; --card:#0b122b; --card2:#0a1638;
-      --border:#1b2a55; --text:#e6ecff; --accent:#7c3aed; --accent2:#22d3ee;
-      --success:#10b981; --warn:#facc15; --danger:#ef4444;
+      --bg:#060812; --bg2:#0a1026; --card:#0b122b; --border:#1b2a55; --text:#e6ecff; 
+      --accent:#7c3aed; --accent2:#22d3ee; --success:#10b981; --warn:#facc15; --danger:#ef4444;
       --shadow: 0 18px 60px rgba(0,0,0,.55);
-      --glow: 0 0 0 1px rgba(124,58,237,.25), 0 0 38px rgba(124,58,237,.25);
     }
     *{box-sizing:border-box}
     body{
       margin:0; padding:22px;
       background: radial-gradient(1200px 800px at 20% 10%, rgba(124,58,237,.22), transparent 55%),
-                  radial-gradient(1000px 700px at 85% 20%, rgba(34,211,238,.18), transparent 55%),
                   linear-gradient(180deg, var(--bg), var(--bg2));
-      color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text); font-family: system-ui, -apple-system, sans-serif;
     }
-    .wrap{max-width:1600px; margin:0 auto;}
-    .card{
-      background: linear-gradient(180deg, rgba(11,18,43,.92), rgba(8,14,36,.92));
-      border:1px solid rgba(27,42,85,.9); border-radius:18px;
-      box-shadow: var(--shadow); overflow:hidden;
-    }
-    .header{
-      padding:18px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px;
-      border-bottom:1px solid rgba(27,42,85,.8);
-      background: linear-gradient(90deg, rgba(124,58,237,.16), rgba(34,211,238,.10));
-    }
-    .title h2{margin:0; font-size:18px; letter-spacing:.4px;}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px; padding:8px 12px;
-      background: rgba(124,58,237,.14); border:1px solid rgba(124,58,237,.30);
-      border-radius:999px; box-shadow: var(--glow); font-size:12px;
-    }
-    .toolbar{
-      display:flex; flex-wrap:wrap; gap:12px; padding:16px 18px;
-      border-bottom:1px solid rgba(27,42,85,.7); background: rgba(6,8,18,.35); align-items:flex-end;
-    }
+    .wrap{max-width:100%; margin:0 auto;}
+    .card{ background: rgba(11,18,43,.92); border:1px solid var(--border); border-radius:18px; box-shadow: var(--shadow); overflow:hidden; }
+    .header{ padding:18px 20px; display:flex; align-items:center; justify-content:space-between; background: linear-gradient(90deg, rgba(124,58,237,.1), rgba(34,211,238,.1)); border-bottom:1px solid var(--border); }
+    .toolbar{ display:flex; flex-wrap:wrap; gap:12px; padding:16px 18px; background: rgba(6,8,18,.35); border-bottom:1px solid var(--border); align-items:flex-end; }
     .group{display:flex; flex-direction:column; gap:6px;}
-    .group label{font-size:11px; font-weight:900; color: rgba(34,211,238,.95); text-transform:uppercase;}
-    input, select{
-      min-height:40px; background: rgba(10,16,38,.9); color: var(--text);
-      border:1px solid rgba(27,42,85,.9); border-radius:10px; padding:10px 12px; outline:none;
-    }
-    button{
-      cursor:pointer; border:none; border-radius:10px; padding:10px 14px;
-      font-weight:900; transition: transform .08s ease; display:inline-flex; align-items:center; gap:8px;
-    }
-    button:hover{ filter: brightness(1.1); }
-    .btn-primary{ background: linear-gradient(90deg, var(--accent), #a78bfa); color:white; }
-    .btn-success{ background: linear-gradient(90deg, var(--success), #34d399); color:#052016; }
-    .btn-danger{ background: linear-gradient(90deg, var(--danger), #fb7185); color:#2a040b; }
-    .btn-ghost{ background: rgba(230,236,255,.06); border:1px solid rgba(230,236,255,.12); color: rgba(230,236,255,.9); }
+    .group label{font-size:11px; font-weight:900; color: var(--accent2); text-transform:uppercase;}
+    input, select{ min-height:40px; background: #0a1026; color: var(--text); border:1px solid var(--border); border-radius:10px; padding:10px; outline:none; }
+    button{ cursor:pointer; border:none; border-radius:10px; padding:10px 14px; font-weight:900; transition: .1s; display:inline-flex; align-items:center; gap:8px; }
+    .btn-primary{ background: var(--accent); color:white; }
+    .btn-success{ background: var(--success); color:#052016; }
+    .btn-danger{ background: var(--danger); color:white; }
+    .btn-ghost{ background: rgba(230,236,255,.05); border:1px solid rgba(230,236,255,.1); color: var(--text); }
     .spacer{ margin-left:auto; }
-    .table-wrap{ overflow:auto; border-top:1px solid rgba(27,42,85,.65); }
-    table{ width:100%; border-collapse:collapse; min-width:1200px; background: rgba(10,16,38,.55); }
-    th, td{ border:1px solid rgba(27,42,85,.7); padding:12px; text-align:center; font-size:13px; }
-    thead th{ position:sticky; top:0; z-index:7; background: rgba(11,18,43,.95); backdrop-filter: blur(10px); }
-    .sticky-col{ position:sticky; left:0; z-index:8; text-align:left; font-weight:900; background: rgba(6,8,18,.92); }
-    .day-divider{ background: rgba(124,58,237,.15) !important; color: var(--accent2); text-align: left; padding-left: 15px; font-weight: 1000; }
-    .badge{ padding:5px 10px; border-radius:10px; font-size:11px; text-transform:uppercase; font-weight:1000; color:white; border:1px solid rgba(255,255,255,.12); }
-    .role-8{ background: linear-gradient(90deg, #2563eb, #60a5fa);}
-    .role-7{ background: linear-gradient(90deg, #10b981, #34d399);}
-    .role-6{ background: linear-gradient(90deg, #a855f7, #c4b5fd);}
-    .role-5{ background: linear-gradient(90deg, #ec4899, #f9a8d4);}
-    .role-3{ background: linear-gradient(90deg, #38bdf8, #7dd3fc);}
-    .role-2{ background: linear-gradient(90deg, #f97316, #fdba74);}
-    .role-1{ background: linear-gradient(90deg, #14b8a6, #5eead4);}
-    .cell-input{ width:72px; background: rgba(230,236,255,.06); border:1px solid rgba(230,236,255,.10); color:var(--text); text-align:center; padding:7px 8px; border-radius:9px; font-weight:900; cursor: pointer;}
-    .sum-row td{ background: rgba(6,8,18,.92) !important; color: var(--warn); font-weight:1000; }
-    .sum-sub td{ background: rgba(6,8,18,.80) !important; color: rgba(230,236,255,.85); font-weight:900; }
-    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.65); display:none; align-items:center; justify-content:center; z-index:9999; padding:18px; }
-    .modal{ width:min(520px,96vw); background: linear-gradient(180deg, rgba(11,18,43,.96), rgba(8,14,36,.96)); border:1px solid rgba(27,42,85,.9); border-radius:18px; box-shadow: var(--shadow); overflow:hidden; }
-    .modal .m-head{ padding:14px 16px; border-bottom:1px solid rgba(27,42,85,.75); background: linear-gradient(90deg, rgba(124,58,237,.16), rgba(34,211,238,.10)); display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    .modal .m-title{ font-weight:1000; letter-spacing:.3px; }
-    .modal .m-body{ padding:16px; display:flex; flex-direction:column; gap:12px; }
-    .modal .m-row{ display:flex; gap:12px; flex-wrap:wrap; }
-    .modal .m-field{ flex:1 1 120px; display:flex; flex-direction:column; gap:6px; }
-    .modal .m-field label{ font-size:11px; font-weight:900; color: rgba(34,211,238,.95); text-transform:uppercase; }
-    .modal .m-actions{ padding:14px 16px; border-top:1px solid rgba(27,42,85,.75); display:flex; gap:10px; justify-content:flex-end; background: rgba(6,8,18,.35); }
-    .hint{ color:rgba(230,236,255,.65); font-size:12px; line-height:1.35; }
+    .table-wrap{ overflow:auto; }
+    table{ width:100%; border-collapse:collapse; min-width:1400px; }
+    th, td{ border:1px solid var(--border); padding:10px; text-align:center; font-size:13px; }
+    .sticky-col{ position:sticky; left:0; z-index:8; text-align:left; background: #060812; font-weight:900; min-width:200px; }
+    .day-row{ background: rgba(239,68,68,0.03); }
+    .activity-row{ background: rgba(230,236,255,0.03); }
+    .total-row td{ background: #facc15 !important; color: #000 !important; font-weight: 1000; }
+    .badge{ padding:4px 8px; border-radius:6px; font-size:11px; color:white; font-weight:bold; }
+    .role-8{ background: #22c55e;} .role-7{ background: #3b82f6;} .role-6{ background: #ec4899;}
+    .cell-input{ width:60px; background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:inherit; text-align:center; padding:5px; border-radius:6px; cursor: pointer; font-weight:bold; }
+    
+    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; z-index:9999; }
+    .modal{ width:450px; background: #0b122b; border:1px solid var(--border); border-radius:18px; box-shadow: var(--shadow); }
+    .m-head{ padding:15px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+    .m-body{ padding:20px; display:flex; flex-direction:column; gap:15px; }
+    .m-actions{ padding:15px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px; }
   </style>
 </head>
 
@@ -97,88 +57,59 @@
 <div class="wrap">
   <div class="card">
     <div class="header">
-      <div class="title"><h2>Учет активности состава — LoliLand</h2></div>
-      <div class="pill" id="weekPill">Неделя: —</div>
+      <h2>Учет активности — LoliLand</h2>
+      <div id="weekPill" class="badge" style="background:var(--accent)">Неделя: —</div>
     </div>
 
     <div class="toolbar">
-      <div class="group"><label>Неделя (начало)</label><input type="date" id="weekStart" onchange="selectWeekFromDate()"></div>
-      <div class="group"><label>Архив недель</label><select id="weekSelect" onchange="loadSelectedWeek()"><option value="">—</option></select></div>
-      <div class="group"><label>Никнейм</label><input type="text" id="nickname" placeholder="Nickname"></div>
+      <div class="group"><label>Начало недели</label><input type="date" id="weekStart" onchange="selectWeekFromDate()"></div>
+      <div class="group"><label>Ник</label><input type="text" id="nickname" placeholder="Никнейм"></div>
       <div class="group">
         <label>Должность</label>
         <select id="role">
-          <option value="7">Старший Администратор</option>
-          <option value="8">Администратор</option>
-          <option value="6">Младший Администратор</option>
-          <option value="5">Старший Модератор</option>
-          <option value="3">Младший Модератор</option>
-          <option value="2">Старший Хелпер</option>
+          <option value="8">Админ</option>
+          <option value="7">Ст.Админ</option>
+          <option value="6">Мл.Админ</option>
+          <option value="5">Ст.Модер</option>
+          <option value="3">Мл.Модер</option>
           <option value="1">Хелпер</option>
         </select>
       </div>
-      <button class="btn-primary" id="btnAdd" onclick="addPerson()">＋ Добавить</button>
-      <button class="btn-success" id="btnSave" onclick="saveWeek()">💾 Сохранить</button>
+      <button class="btn-primary" onclick="addPerson()">＋ Добавить</button>
+      <button class="btn-success" onclick="saveWeek()">💾 Сохранить</button>
       <div class="spacer"></div>
-      <button class="btn-danger" id="btnClear" onclick="clearWeek()">🗑 Очистить</button>
+      <button class="btn-danger" onclick="clearWeek()">🗑 Очистить</button>
     </div>
 
-    <div class="table-wrap" id="tableWrap">
+    <div class="table-wrap">
       <table id="mainTable">
         <thead>
-          <tr id="roleRow"><th class="sticky-col">Должность</th></tr>
-          <tr id="nickRow"><th class="sticky-col">Никнейм</th></tr>
+          <tr id="roleRow"><th class="sticky-col">Должность:</th></tr>
+          <tr id="nickRow"><th class="sticky-col">Ник:</th></tr>
         </thead>
         <tbody id="bodyRows"></tbody>
         <tfoot>
-          <tr class="sum-row" id="sumScreensRow"><td class="sticky-col">ИТОГО СКРИНОВ (7 дней)</td></tr>
-          <tr class="sum-sub" id="sumOnlineRow"><td class="sticky-col">Σ Онлайн</td></tr>
-          <tr class="sum-sub" id="sumMutesRow"><td class="sticky-col">Σ Муты</td></tr>
-          <tr class="sum-sub" id="sumBansRow"><td class="sticky-col">Σ Баны</td></tr>
-          <tr class="sum-sub" id="sumTicketsRow"><td class="sticky-col">Σ Тикеты</td></tr>
-          <tr class="sum-sub" id="sumRatingRow"><td class="sticky-col">Рейтинг</td></tr>
+          <tr class="total-row" id="sumTotalRow"><td class="sticky-col">Количество скринов (суммарно)</td></tr>
         </tfoot>
       </table>
     </div>
+  </div>
+</div>
 
-    <div class="modal-backdrop" id="authBackdrop" style="display:flex">
-      <div class="modal">
-        <div class="m-head"><div class="m-title">Вход</div><div class="pill" style="margin-left:auto">Activity System</div></div>
-        <div class="m-body">
-          <div class="group" style="width:100%"><label>Введите ник</label><input type="text" id="authNick" placeholder="Nickname" autocomplete="off"></div>
-          <div class="hint">Если ник совпадает с ником админа — режим редактирования. Иначе — только чтение.</div>
-        </div>
-        <div class="m-actions"><button class="btn-primary" id="authBtn">Войти</button></div>
+<div class="modal-backdrop" id="editBackdrop">
+  <div class="modal">
+    <div class="m-head"><b id="editTitle">Редактирование</b><button class="btn-ghost" onclick="closeEditor()">✕</button></div>
+    <div class="m-body">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+        <div class="group"><label>Скрины дня</label><input type="number" id="editOnline"></div>
+        <div class="group"><label>Муты</label><input type="number" id="editMutes"></div>
+        <div class="group"><label>Баны</label><input type="number" id="editBans"></div>
+        <div class="group"><label>Тикеты</label><input type="number" id="editTickets"></div>
       </div>
     </div>
-
-    <div class="modal-backdrop" id="editBackdrop">
-      <div class="modal">
-        <div class="m-head">
-          <div class="m-title" id="editTitle">Редактирование</div>
-          <button class="btn-ghost" id="editCloseBtn">✕</button>
-        </div>
-        <div class="m-body">
-          <div class="m-row">
-            <div class="m-field"><label>Онлайн</label><input type="number" id="editOnline" min="0" step="1"></div>
-            <div class="m-field"><label>Муты</label><input type="number" id="editMutes" min="0" step="1"></div>
-          </div>
-          <div class="m-row">
-            <div class="m-field"><label>Баны</label><input type="number" id="editBans" min="0" step="1"></div>
-            <div class="m-field"><label>Тикеты</label><input type="number" id="editTickets" min="0" step="1"></div>
-          </div>
-          <div class="hint">Вводи числа. Пустое = 0. Данные сохраняются для выбранного дня.</div>
-        </div>
-        <div class="m-actions">
-          <button class="btn-ghost" id="editCancelBtn">Отмена</button>
-          <button class="btn-success" id="editSaveBtn">Сохранить</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="note">
-      <div style="color:rgba(230,236,255,.6)">Рейтинг: Онлайн×1 + Муты×2 + Баны×3 + Тикеты×1.5</div>
-      <button class="btn-ghost" onclick="exportToExcel()">📥 Export XLS</button>
+    <div class="m-actions">
+      <button class="btn-ghost" onclick="closeEditor()">Отмена</button>
+      <button class="btn-success" onclick="confirmEdit()">Сохранить</button>
     </div>
   </div>
 </div>
@@ -192,197 +123,90 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const ROLE_NAMES = { 8:"Админ", 7:"Ст.Админ", 6:"Мл.Админ", 5:"Ст.Модер", 3:"Мл.Модер", 2:"Ст.Хелпер", 1:"Хелпер" };
-const WEIGHTS = { online: 1, mutes: 2, bans: 3, tickets: 1.5 };
-const ADMIN_NICKS = ["SIPRISE", "playbodya_", "Nesquik_"];
-
-let currentWeekKey = "", weekData = null, unsubWeek = null, currentUserNick = "", canEdit = false;
+const ROLE_NAMES = { 8:"Админ", 7:"Ст.Админ", 6:"Мл.Админ", 5:"Ст.Модер", 3:"Мл.Модер", 1:"Хелпер" };
+let currentWeekKey = "", weekData = null;
 let editPid = null, editDay = null;
 
-function ymd(date){
-  const y = date.getFullYear();
-  const m = String(date.getMonth()+1).padStart(2,"0");
-  const d = String(date.getDate()).padStart(2,"0");
-  return `${y}-${m}-${d}`;
-}
-function parseYmd(s){
-  const [y,m,d] = s.split("-").map(Number);
-  return new Date(y, (m||1)-1, d||1, 0,0,0,0);
-}
-
-function showAuth(){
-  const backdrop = document.getElementById("authBackdrop");
-  const input = document.getElementById("authNick");
-  const btn = document.getElementById("authBtn");
-  const doLogin = () => {
-    const nick = (input.value || "").trim();
-    if(!nick) return;
-    currentUserNick = nick;
-    canEdit = ADMIN_NICKS.map(n=>n.toLowerCase()).includes(nick.toLowerCase());
-    applyAccessMode();
-    backdrop.style.display = "none";
-    init();
-  };
-  btn.onclick = doLogin;
-  input.addEventListener("keydown", (e)=>{ if(e.key==="Enter") doLogin(); });
-}
-
-function applyAccessMode(){
-  const lock = !canEdit;
-  ["btnAdd","btnSave","btnClear","nickname","role"].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.disabled = lock;
-  });
-  const pill = document.getElementById("weekPill");
-  if(pill) pill.innerText = pill.innerText.replace(" (READ)", "").replace(" (EDIT)", "") + (lock ? " (READ)" : " (EDIT)");
-}
-
-function init(){
+function init() {
   const today = new Date();
-  const day = (today.getDay() + 6) % 7;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - day);
-  const k = ymd(monday);
+  const monday = new Date(today.setDate(today.getDate() - (today.getDay() + 6) % 7));
+  const k = monday.toISOString().split('T')[0];
   document.getElementById("weekStart").value = k;
   selectWeekFromDate();
-  loadWeeksList();
 }
 
-async function loadWeeksList(){
-  db.ref("activity").on("value", snap => {
-    const sel = document.getElementById("weekSelect");
-    sel.innerHTML = `<option value="">—</option>`;
-    if(!snap.exists()) return;
-    Object.keys(snap.val()).sort().reverse().forEach(k => {
-      const opt = document.createElement("option");
-      opt.value = k; opt.textContent = k; sel.appendChild(opt);
-    });
+function selectWeekFromDate() {
+  currentWeekKey = document.getElementById("weekStart").value;
+  document.getElementById("weekPill").innerText = "Неделя: " + currentWeekKey;
+  db.ref("activity/" + currentWeekKey).on("value", snap => {
+    weekData = snap.exists() ? snap.val() : { weekStart: currentWeekKey, days: [], people: [], entries: {} };
+    if(!weekData.days.length) {
+       let d = new Date(currentWeekKey);
+       for(let i=0; i<7; i++) {
+         weekData.days.push(new Date(d).toISOString().split('T')[0]);
+         d.setDate(d.getDate() + 1);
+       }
+    }
+    renderTable();
   });
 }
 
-function selectWeekFromDate(){
-  const k = document.getElementById("weekStart").value;
-  if(!k) return;
-  currentWeekKey = k;
-  document.getElementById("weekPill").innerText = "Неделя: " + k;
-  applyAccessMode();
-  subscribeWeek(k);
-}
-
-function loadSelectedWeek(){
-  const k = document.getElementById("weekSelect").value;
-  if(k){ document.getElementById("weekStart").value = k; selectWeekFromDate(); }
-}
-
-function subscribeWeek(weekKey){
-  if(unsubWeek) unsubWeek.off();
-  unsubWeek = db.ref("activity/" + weekKey);
-  unsubWeek.on("value", (snap)=>{
-    weekData = snap.exists() ? snap.val() : buildDefaultWeek(weekKey);
-    renderWeek();
-  });
-}
-
-function buildDefaultWeek(weekKey){
-  const days = [];
-  const base = parseYmd(weekKey);
-  for(let i=0;i<7;i++){
-    const d = new Date(base);
-    d.setDate(base.getDate()+i);
-    days.push(ymd(d));
-  }
-  return { weekStart:weekKey, days, people:[], entries:{} };
-}
-
-function renderWeek(){
-  if(!weekData) return;
+function renderTable() {
   const people = weekData.people || [];
   const days = weekData.days || [];
-
-  document.getElementById("roleRow").innerHTML = `<th class="sticky-col">Должность</th>` + 
-    people.map(p => `<th><span class="badge role-${p.role}">${ROLE_NAMES[p.role] || "—"}</span></th>`).join('');
-  document.getElementById("nickRow").innerHTML = `<th class="sticky-col">Никнейм</th>` + 
-    people.map(p => `<th>${p.nick}</th>`).join('');
+  
+  document.getElementById("roleRow").innerHTML = `<td class="sticky-col">Должность:</td>` + 
+    people.map(p => `<td><span class="badge role-${p.role}">${ROLE_NAMES[p.role]}</span></td>`).join('');
+  document.getElementById("nickRow").innerHTML = `<td class="sticky-col">Ник:</td>` + 
+    people.map(p => `<td><b>${p.nick}</b></td>`).join('');
 
   let html = "";
-  const types = [{k:'online',l:'Онлайн'}, {k:'mutes',l:'Муты'}, {k:'bans',l:'Баны'}, {k:'tickets',l:'Тикеты'}];
-
-  for(let i=0; i<7; i++){
-    const d = parseYmd(days[i]);
-    const fmt = d.toLocaleDateString("ru-RU",{weekday:"short",day:"2-digit",month:"2-digit"});
-    html += `<tr><td colspan="${people.length+1}" class="day-divider">${fmt}</td></tr>`;
-    
-    types.forEach(type => {
-      html += `<tr><td class="sticky-col" style="padding-left:25px; font-size:11px; color:rgba(230,236,255,.5)">${type.l}</td>`;
-      people.forEach(p => {
-        const val = weekData.entries?.[p.id]?.[i]?.[type.k] || 0;
-        html += `<td><input class="cell-input" type="text" readonly value="${val}" ${canEdit ? `onclick="openDayEditor('${p.id}',${i})"` : ''}></td>`;
-      });
-      html += `</tr>`;
-    });
-  }
-  document.getElementById("bodyRows").innerHTML = html;
-  renderTotals();
-}
-
-function renderTotals(){
-  const people = weekData.people || [];
-  const stats = ["ИТОГО СКРИНОВ","Σ Онлайн","Σ Муты","Σ Баны","Σ Тикеты","Рейтинг"];
-  const ids = ["sumScreensRow","sumOnlineRow","sumMutesRow","sumBansRow","sumTicketsRow","sumRatingRow"];
-
-  ids.forEach((id, idx) => {
-    let rowHtml = `<td class="sticky-col">${stats[idx]}</td>`;
+  // Дни недели (Скрины помощи)
+  days.forEach((d, idx) => {
+    const dateFmt = d.split('-').reverse().slice(0,2).join('.');
+    html += `<tr class="day-row"><td class="sticky-col">${dateFmt}</td>`;
     people.forEach(p => {
-      let val = 0;
-      const on = getSum(p.id,"online"), mu = getSum(p.id,"mutes"), ba = getSum(p.id,"bans"), ti = getSum(p.id,"tickets");
-      if(idx===0) val = (on+mu+ba+ti);
-      else if(idx===1) val = on;
-      else if(idx===2) val = mu;
-      else if(idx===3) val = ba;
-      else if(idx===4) val = ti;
-      else if(idx===5) val = Math.round((on*WEIGHTS.online + mu*WEIGHTS.mutes + ba*WEIGHTS.bans + ti*WEIGHTS.tickets)*10)/10;
-      rowHtml += `<td>${val}</td>`;
+      const val = weekData.entries?.[p.id]?.[idx]?.online || 0;
+      html += `<td><input class="cell-input" readonly value="${val}" onclick="openEditor('${p.id}', ${idx})"></td>`;
     });
-    document.getElementById(id).innerHTML = rowHtml;
+    html += `</tr>`;
   });
+
+  // Активности
+  const types = [{k:'bans', l:'Баны'}, {k:'mutes', l:'Муты'}, {k:'tickets', l:'Тикеты'}];
+  types.forEach(t => {
+    html += `<tr class="activity-row"><td class="sticky-col">${t.l}</td>`;
+    people.forEach(p => {
+      let sum = 0;
+      for(let i=0; i<7; i++) sum += (weekData.entries?.[p.id]?.[i]?.[t.k] || 0);
+      html += `<td><input class="cell-input" readonly value="${sum}" onclick="openEditor('${p.id}', 0)"></td>`;
+    });
+    html += `</tr>`;
+  });
+
+  document.getElementById("bodyRows").innerHTML = html;
+  renderTotalRow();
 }
 
-function getSum(pid, key){
-  let s = 0;
-  for(let i=0;i<7;i++) s += (+weekData.entries?.[pid]?.[i]?.[key]||0);
-  return s;
+function renderTotalRow() {
+  const people = weekData.people || [];
+  let row = `<td class="sticky-col">Количество скринов (суммарно)</td>`;
+  people.forEach(p => {
+    let total = 0;
+    for(let i=0; i<7; i++) {
+      const e = weekData.entries?.[p.id]?.[i] || {};
+      total += (+e.online||0) + (+e.mutes||0) + (+e.bans||0) + (+e.tickets||0);
+    }
+    row += `<td>${total}</td>`;
+  });
+  document.getElementById("sumTotalRow").innerHTML = row;
 }
 
-function wireEditorModal(){
-  const back = document.getElementById("editBackdrop");
-  const saveBtn = document.getElementById("editSaveBtn");
-  const close = ()=>{ back.style.display="none"; editPid=null; editDay=null; };
-
-  document.getElementById("editCloseBtn").onclick = close;
-  document.getElementById("editCancelBtn").onclick = close;
-  
-  saveBtn.onclick = () => {
-    if(!canEdit || editPid===null) return close();
-    if(!weekData.entries) weekData.entries = {};
-    if(!weekData.entries[editPid]) weekData.entries[editPid] = {};
-    
-    weekData.entries[editPid][editDay] = {
-      online: Math.max(0, parseInt(document.getElementById("editOnline").value)||0),
-      mutes: Math.max(0, parseInt(document.getElementById("editMutes").value)||0),
-      bans: Math.max(0, parseInt(document.getElementById("editBans").value)||0),
-      tickets: Math.max(0, parseInt(document.getElementById("editTickets").value)||0)
-    };
-    close();
-    saveWeek();
-  };
-}
-
-function openDayEditor(pid, day){
-  if(!canEdit) return;
+function openEditor(pid, day) {
   editPid = pid; editDay = day;
-  const p = weekData.people.find(x=>x.id===pid);
-  document.getElementById("editTitle").innerText = `${p?.nick} • ${weekData.days[day]}`;
-  const e = weekData.entries?.[pid]?.[day] || {online:0,mutes:0,bans:0,tickets:0};
+  const p = weekData.people.find(x => x.id === pid);
+  document.getElementById("editTitle").innerText = p.nick + " (День " + (day+1) + ")";
+  const e = weekData.entries?.[pid]?.[day] || {online:0, mutes:0, bans:0, tickets:0};
   document.getElementById("editOnline").value = e.online;
   document.getElementById("editMutes").value = e.mutes;
   document.getElementById("editBans").value = e.bans;
@@ -390,28 +214,39 @@ function openDayEditor(pid, day){
   document.getElementById("editBackdrop").style.display = "flex";
 }
 
-function addPerson(){
-  if(!canEdit) return;
-  const nick = document.getElementById("nickname").value.trim();
-  const role = +document.getElementById("role").value;
+function closeEditor() { document.getElementById("editBackdrop").style.display = "none"; }
+
+function confirmEdit() {
+  if(!weekData.entries[editPid]) weekData.entries[editPid] = {};
+  weekData.entries[editPid][editDay] = {
+    online: +document.getElementById("editOnline").value || 0,
+    mutes: +document.getElementById("editMutes").value || 0,
+    bans: +document.getElementById("editBans").value || 0,
+    tickets: +document.getElementById("editTickets").value || 0
+  };
+  closeEditor();
+  renderTable();
+}
+
+function addPerson() {
+  const nick = document.getElementById("nickname").value;
   if(!nick) return;
-  if(!weekData.people) weekData.people = [];
-  weekData.people.push({ id:"p_"+Date.now(), nick, role });
-  document.getElementById("nickname").value = "";
-  saveWeek();
+  weekData.people.push({ id: "p_"+Date.now(), nick, role: document.getElementById("role").value });
+  renderTable();
 }
 
-async function saveWeek(){ if(canEdit) await db.ref("activity/" + currentWeekKey).set(weekData); }
-async function clearWeek(){ if(canEdit && confirm("Очистить неделю?")) await db.ref("activity/" + currentWeekKey).remove(); }
-function exportToExcel(){
-  const blob = new Blob([document.getElementById("mainTable").outerHTML], {type:"application/vnd.ms-excel"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download="activity_loliland.xls";
-  a.click();
+async function saveWeek() {
+  await db.ref("activity/" + currentWeekKey).set(weekData);
 }
 
-document.addEventListener("DOMContentLoaded", () => { wireEditorModal(); showAuth(); });
+async function clearWeek() {
+  if(confirm("Удалить всё?")) {
+    await db.ref("activity/" + currentWeekKey).remove();
+    location.reload();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", init);
 </script>
 </body>
 </html>
