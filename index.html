@@ -47,8 +47,15 @@
     .progress-bar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; margin: -4px 0 15px 0; overflow: hidden; width: 100%; }
     .progress-fill { height: 100%; background: var(--bad); border-radius: 3px; }
     .premium-zone { margin-top: 15px; padding: 14px; border-radius: 14px; background: rgba(168, 85, 247, 0.08); border: 1px dashed rgba(168, 85, 247, 0.3); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-    .admin-only { display: none !important; }
-    body.editor-mode .admin-only { display: inline-block !important; }
+    
+    /* Скрываем элементы через CSS, если нет класса editor-mode на body */
+    .admin-only, .stars-only { display: none !important; }
+    body.editor-mode .admin-only, body.editor-mode .stars-only { display: inline-block !important; }
+    body.editor-mode .premium-zone { display: flex !important; }
+    
+    /* В режиме просмотра полностью скрываем блок премии */
+    body:not(.editor-mode) .premium-zone { display: none !important; }
+
     .delete-btn { position: absolute; top: 20px; right: 20px; color: var(--bad); font-size: 9px; font-weight: 900; text-transform: uppercase; cursor: pointer; padding: 4px 8px; border-radius: 6px; background: rgba(239, 68, 68, 0.1); }
   </style>
 </head>
@@ -156,42 +163,26 @@ async function init() {
   loadWeek(allWeeks[0] || new Date().toISOString().split('T')[0]);
 }
 
-function updateWeekDropdown() {
-  document.getElementById('weekSelect').innerHTML = allWeeks.map(w => `<option value="${w}">${w}</option>`).join('');
-}
+function updateWeekDropdown() { document.getElementById('weekSelect').innerHTML = allWeeks.map(w => `<option value="${w}">${w}</option>`).join(''); }
 
 async function createNewWeek() {
-  const name = prompt("Введите дату начала недели (ГГГГ-ММ-ДД):", new Date().toISOString().split('T')[0]);
+  const name = prompt("Введите дату (ГГГГ-ММ-ДД):", new Date().toISOString().split('T')[0]);
   if(!name) return;
-  
-  // Если такой недели еще нет, она создастся при первом сохранении. 
-  // Но мы сразу переключимся на неё, и сработает логика копирования.
-  if(!allWeeks.includes(name)) {
-    allWeeks.unshift(name);
-    updateWeekDropdown();
-    document.getElementById('weekSelect').value = name;
-    loadWeek(name);
-  }
+  if(!allWeeks.includes(name)) { allWeeks.unshift(name); updateWeekDropdown(); document.getElementById('weekSelect').value = name; loadWeek(name); }
 }
 
 function loadWeek(key) {
   currentWeek = key;
   db.ref("activity/" + key).on("value", async snap => {
     weekData = snap.val();
-    
-    // ЛОГИКА КОПИРОВАНИЯ: Если в текущей неделе нет людей, а редактор зашел
     if(!weekData || !weekData.people || weekData.people.length === 0) {
       if(isEditor) {
-        // Ищем ближайшую прошлую неделю с людьми
         const prevWeekKey = allWeeks.find(w => w !== currentWeek);
         if(prevWeekKey) {
           const prevSnap = await db.ref(`activity/${prevWeekKey}/people`).once("value");
-          const prevPeople = prevSnap.val();
-          if(prevPeople) {
-            if(confirm(`Команда пуста. Скопировать состав сотрудников из недели ${prevWeekKey}?`)) {
-              await db.ref(`activity/${currentWeek}/people`).set(prevPeople);
-              return; // re-trigger от слушателя .on()
-            }
+          if(prevSnap.val() && confirm(`Скопировать состав из ${prevWeekKey}?`)) {
+            await db.ref(`activity/${currentWeek}/people`).set(prevSnap.val());
+            return;
           }
         }
       }
@@ -202,11 +193,12 @@ function loadWeek(key) {
 }
 
 function openStarModal(nick, scrStars, pen, penStars, tick, tickStars, total) {
+  if(!isEditor) return; // Защита на случай взлома CSS
   document.getElementById('sm-title').innerText = `Премия: ${nick}`;
   document.getElementById('sm-body').innerHTML = `
-    <div style="display:flex; justify-content:space-between; margin-bottom:12px; background:rgba(255,255,255,0.03); padding:10px; border-radius:10px;"><span>Скрины (за неделю):</span> <b style="color:var(--cyan)">+${scrStars} ⭐</b></div>
-    <div style="display:flex; justify-content:space-between; margin-bottom:12px; background:rgba(255,255,255,0.03); padding:10px; border-radius:10px;"><span>Муты и Баны (${pen} шт.):</span> <b style="color:var(--bad)">+${penStars} ⭐</b></div>
-    <div style="display:flex; justify-content:space-between; margin-bottom:12px; background:rgba(255,255,255,0.03); padding:10px; border-radius:10px;"><span>Тикеты (${tick} шт.):</span> <b style="color:var(--violet)">+${tickStars} ⭐</b></div>
+    <div style="display:flex; justify-content:space-between; margin-bottom:12px; background:rgba(255,255,255,0.03); padding:10px; border-radius:10px;"><span>Скрины:</span> <b style="color:var(--cyan)">+${scrStars} ⭐</b></div>
+    <div style="display:flex; justify-content:space-between; margin-bottom:12px; background:rgba(255,255,255,0.03); padding:10px; border-radius:10px;"><span>Муты/Баны (${pen}):</span> <b style="color:var(--bad)">+${penStars} ⭐</b></div>
+    <div style="display:flex; justify-content:space-between; margin-bottom:12px; background:rgba(255,255,255,0.03); padding:10px; border-radius:10px;"><span>Тикеты (${tick}):</span> <b style="color:var(--violet)">+${tickStars} ⭐</b></div>
     <hr style="border-color:var(--line); margin:20px 0;"><div style="display:flex; justify-content:space-between; font-size:20px; font-weight:900;"><span>Итог:</span> <b style="color:var(--gold)">${total} ⭐</b></div>
   `;
   document.getElementById('starModal').classList.add('active');
@@ -230,7 +222,8 @@ function render() {
       let dailyScreens = Number(weekData.entries?.[p.id]?.[i]?.online || 0);
       let dailyStars = dailyScreens >= 40 ? 3 : (dailyScreens >= 11 ? 2 : (dailyScreens >= 1 ? 1 : 0));
       totalScr += dailyScreens; totalScreenStars += dailyStars;
-      daysHTML += `<div class="day-box"><span>${DAYS[i]}</span><input type="number" class="day-input" value="${dailyScreens}" ${!isEditor?'disabled':''} onchange="upd('${p.id}', ${i}, 'online', this.value)"><span style="color:var(--gold); font-size:10px; margin-top:3px; font-weight:900;">${dailyStars} ⭐</span></div>`;
+      // Звезды под днями оборачиваем в .stars-only
+      daysHTML += `<div class="day-box"><span>${DAYS[i]}</span><input type="number" class="day-input" value="${dailyScreens}" ${!isEditor?'disabled':''} onchange="upd('${p.id}', ${i}, 'online', this.value)"><span class="stars-only" style="color:var(--gold); font-size:10px; margin-top:3px; font-weight:900;">${dailyStars} ⭐</span></div>`;
     }
     const e = weekData.entries?.[p.id]?.[99] || { mutes:0, bans:0, tickets:0 };
     let pen = Number(e.mutes||0) + Number(e.bans||0), penStars = pen >= 15 ? 3 : (pen >= 6 ? 2 : (pen >= 1 ? 1 : 0));
@@ -248,7 +241,7 @@ function render() {
       <div class="stat-row"><span>Баны</span><input type="number" class="stat-input" value="${e.bans||0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}', 99, 'bans', this.value)"></div>
       <div class="stat-row"><span>Тикеты</span><input type="number" class="stat-input" value="${e.tickets||0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}', 99, 'tickets', this.value)"></div>
       <div class="premium-zone" onclick="openStarModal('${p.nick}', ${totalScreenStars}, ${pen}, ${penStars}, ${tick}, ${tickStars}, ${totalStars})">
-        <span style="font-size:11px; font-weight:900; color:var(--violet); text-transform:uppercase;">Премия (Нажми)</span><b style="color:var(--gold); font-size:16px;">${totalStars} ⭐</b>
+        <span style="font-size:11px; font-weight:900; color:var(--violet); text-transform:uppercase;">Премия</span><b style="color:var(--gold); font-size:16px;">${totalStars} ⭐</b>
       </div>`;
     if (p.team === 9) { grid9.appendChild(card); c9++; } else { grid10.appendChild(card); c10++; }
   });
@@ -261,8 +254,7 @@ function closeAdd() { document.getElementById('addModal').classList.remove('acti
 async function confirmAdd() {
   const nick = document.getElementById('newNick').value; if(!nick) return alert('Ник!');
   const p = { id: "u_"+Date.now(), nick, team: parseInt(document.getElementById('newTeam').value), role: parseInt(document.getElementById('newRole').value) };
-  const list = weekData.people || []; list.push(p);
-  await db.ref(`activity/${currentWeek}/people`).set(list);
+  const list = weekData.people || []; list.push(p); await db.ref(`activity/${currentWeek}/people`).set(list);
   closeAdd(); document.getElementById('newNick').value = ""; 
 }
 async function removeMember(id) { if(!confirm('Удалить?')) return; const newList = (weekData.people || []).filter(x => x.id !== id); await db.ref(`activity/${currentWeek}/people`).set(newList); }
