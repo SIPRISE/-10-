@@ -27,7 +27,7 @@
       background-image: radial-gradient(circle at 10% 20%, rgba(168, 85, 247, 0.1), transparent 40%);
     }
 
-    /* Меню входа */
+    /* Вход */
     #auth-overlay {
       position: fixed; inset: 0; background: var(--bg); z-index: 10000;
       display: flex; align-items: center; justify-content: center; backdrop-filter: blur(25px);
@@ -41,69 +41,78 @@
       font-weight: 800; cursor: pointer; font-size: 15px;
     }
 
-    /* Выбор команды при входе */
-    #team-select-ui { display: none; margin-top: 20px; animation: fadeIn 0.3s; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    #team-select-ui { display: none; margin-top: 20px; }
 
-    /* Панель управления видимостью (для Редакторов) */
-    .view-switcher {
-      display: flex; background: var(--panel); padding: 5px; border-radius: 15px; border: 1px solid var(--line);
-    }
-    .view-btn {
-      padding: 8px 15px; border-radius: 10px; border: none; background: none; color: var(--muted);
-      cursor: pointer; font-weight: 700; font-size: 12px;
-    }
-    .view-btn.active { background: var(--violet); color: #fff; }
-
-    /* Остальные стили */
+    /* Контент */
     .wrap { max-width: 1400px; margin: 0 auto; display: none; }
     .wrap.active { display: block; }
+    
     .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 20px; }
-    
-    .stats-header { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-    .stat-box { background: var(--panel); border: 1px solid var(--line); padding: 15px 20px; border-radius: 20px; border-left: 4px solid var(--violet); }
-    .stat-val { font-size: 24px; font-weight: 900; display: block; }
-    
+    .view-switcher { display: flex; background: var(--panel); padding: 5px; border-radius: 15px; border: 1px solid var(--line); }
+    .view-btn { padding: 8px 15px; border-radius: 10px; border: none; background: none; color: var(--muted); cursor: pointer; font-weight: 700; }
+    .view-btn.active { background: var(--violet); color: #fff; }
+
     .team-section { margin-bottom: 50px; }
     .team-section.hidden { display: none; }
     .team-title { font-size: 28px; font-weight: 900; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
 
-    .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 20px; }
-    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 25px; padding: 20px; }
-    .card:hover { border-color: var(--violet); transform: translateY(-5px); }
+    /* Новая карточка */
+    .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 30px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .card:hover { border-color: var(--violet); }
     
-    .bar-bg { height: 8px; background: rgba(255,255,255,0.05); border-radius: 10px; margin: 15px 0 5px; overflow: hidden; }
-    .bar-fill { height: 100%; border-radius: 10px; }
-    
-    .days-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 15px 0; }
-    .day-box { background: rgba(0,0,0,0.2); padding: 8px; border-radius: 12px; text-align: center; }
-    .day-box input { width: 100%; background: none; border: none; color: #fff; text-align: center; font-weight: 800; outline: none; }
-    
+    .nick-box b { font-size: 20px; color: #fff; }
+    .role-badge { font-size: 12px; font-weight: 900; color: var(--violet); text-transform: uppercase; }
+
+    /* Сетка скринов */
+    .screens-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
+    .screen-day { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 15px; text-align: center; border: 1px solid var(--line); }
+    .screen-day small { font-size: 9px; color: var(--muted); display: block; margin-bottom: 2px; }
+    .screen-day b { font-size: 8px; color: var(--violet); display: block; margin-bottom: 5px; }
+    .screen-input { width: 100%; background: none; border: none; color: #fff; text-align: center; font-size: 16px; font-weight: 900; outline: none; }
+
+    /* Итого скринов */
+    .total-screens-row { 
+        background: linear-gradient(90deg, rgba(168, 85, 247, 0.1), transparent);
+        padding: 12px 20px; border-radius: 15px; border: 1px solid rgba(168, 85, 247, 0.2);
+        display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+    }
+    .total-screens-label { font-size: 12px; font-weight: 900; letter-spacing: 1px; }
+    .total-screens-val { font-size: 18px; font-weight: 900; color: var(--violet); }
+
+    /* Нижние колонки */
+    .mod-stats-list { display: flex; flex-direction: column; gap: 8px; }
+    .mod-item { 
+        display: flex; justify-content: space-between; align-items: center; 
+        background: rgba(255,255,255,0.03); padding: 12px 20px; border-radius: 15px; 
+    }
+    .mod-item label { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+    .mod-input { width: 60px; background: none; border: none; color: #fff; text-align: right; font-size: 16px; font-weight: 900; outline: none; }
+
     .admin-only { display: none !important; }
     body.editor-mode .admin-only { display: flex !important; }
 
     .search-input { background: var(--panel); border: 1px solid var(--line); padding: 12px 20px; border-radius: 15px; color: #fff; outline: none; }
-    .search-input:focus { border-color: var(--violet); }
   </style>
 </head>
-<body onclick="hideDropdowns()">
+<body onclick="document.querySelectorAll('.week-dropdown').forEach(d=>d.classList.remove('show'))">
 
 <div id="auth-overlay">
-  <div class="auth-card" id="auth-step-1">
+  <div class="auth-card">
     <h1 style="margin:0 0 10px; font-weight:900;">LoliLand Staff</h1>
-    <button class="auth-btn" style="background: rgba(255,255,255,0.05); color: #fff;" onclick="prepareReader()">📖 Читатель</button>
-    <button class="auth-btn" style="background: var(--violet); color: #fff;" onclick="showPassUI()">🛠 Редактор</button>
+    <button class="auth-btn" style="background: rgba(255,255,255,0.05); color: #fff;" onclick="document.getElementById('team-select-ui').style.display='block'">📖 Читатель</button>
+    <button class="auth-btn" style="background: var(--violet); color: #fff;" onclick="document.getElementById('pass-ui').style.display='block'">🛠 Редактор</button>
     
     <div id="pass-ui" style="display:none; margin-top:20px;">
       <input type="password" id="admin-pass" class="search-input" placeholder="Пароль" style="width:100%;">
-      <button class="auth-btn" style="background: var(--violet); color: #fff;" onclick="login(true)">Войти</button>
+      <button class="auth-btn" style="background: var(--violet); color: #fff; margin-top:10px;" onclick="login(true)">Войти</button>
     </div>
 
     <div id="team-select-ui">
-      <p style="color:var(--muted); font-size:14px;">Какую команду отобразить?</p>
+      <p style="color:var(--muted); font-size:14px; margin-top:20px;">Выберите команду</p>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-        <button class="auth-btn" style="background:rgba(255,255,255,0.1); color:#fff;" onclick="login(false, 9)">Команда 9</button>
-        <button class="auth-btn" style="background:rgba(255,255,255,0.1); color:#fff;" onclick="login(false, 10)">Команда 10</button>
+        <button class="auth-btn" style="background:rgba(255,255,255,0.1); color:#fff;" onclick="login(false, 9)">К9</button>
+        <button class="auth-btn" style="background:rgba(255,255,255,0.1); color:#fff;" onclick="login(false, 10)">К10</button>
       </div>
     </div>
   </div>
@@ -112,29 +121,21 @@
 <div class="wrap" id="main-wrap">
   <div class="top-bar">
     <div>
-      <h2 style="margin:0; font-weight:900;">Elite Dashboard</h2>
+      <h2 style="margin:0; font-weight:900;">Staff Dashboard</h2>
       <select id="weekSelect" class="search-input" style="margin-top:10px;" onchange="loadWeek(this.value)"></select>
     </div>
-    
     <div style="display:flex; gap:15px; align-items:center;">
-      <input type="text" id="searchField" class="search-input" placeholder="Поиск ника..." oninput="render()">
-      
-      <div class="view-switcher admin-only" id="editor-view-controls">
+      <input type="text" id="searchField" class="search-input" placeholder="Поиск..." oninput="render()">
+      <div class="view-switcher admin-only">
         <button class="view-btn active" onclick="setFilter('all', this)">Все</button>
         <button class="view-btn" onclick="setFilter(9, this)">К9</button>
         <button class="view-btn" onclick="setFilter(10, this)">К10</button>
       </div>
-      
-      <button class="auth-btn admin-only" style="margin:0; padding:10px 20px; background:var(--violet); color:#fff;" onclick="createNewWeek()">+ Неделя</button>
+      <button class="auth-btn admin-only" style="margin:0; padding:10px 20px; background:var(--violet); color:#fff; width:auto;" onclick="createNewWeek()">+ Неделя</button>
     </div>
   </div>
 
-  <div class="stats-header">
-    <div class="stat-box"><span style="color:var(--muted); font-size:11px;">ОБЩИЙ ОНЛАЙН</span><span class="stat-val" id="total-pts">0</span></div>
-    <div class="stat-box"><span style="color:var(--muted); font-size:11px;">ГЕРОЙ НЕДЕЛИ</span><span class="stat-val" id="top-player" style="color:var(--cyan)">—</span></div>
-  </div>
-
-  <div class="admin-only" style="background:var(--panel); padding:15px; border-radius:20px; margin-bottom:30px; gap:10px;">
+  <div class="admin-only" style="background:var(--panel); padding:20px; border-radius:25px; margin-bottom:40px; display:flex; gap:10px;">
     <input type="text" id="newNick" class="search-input" placeholder="Ник" style="flex:2;">
     <select id="newRole" class="search-input" style="flex:1;">
       <option value="10">Ст.Админ</option><option value="8">Админ</option><option value="2">Ст.Хелпер</option><option value="1">Хелпер</option>
@@ -146,12 +147,12 @@
   </div>
 
   <div id="section-9" class="team-section">
-    <div class="team-title">Команда 9 <span style="font-size:14px; background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:10px;" id="cnt-9">0</span></div>
+    <div class="team-title">Команда 9 <span id="cnt-9" style="font-size:14px; color:var(--muted)"></span></div>
     <div class="staff-grid" id="grid-9"></div>
   </div>
 
   <div id="section-10" class="team-section">
-    <div class="team-title" style="color:var(--cyan)">Команда 10 <span style="font-size:14px; background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:10px; color:#fff;" id="cnt-10">0</span></div>
+    <div class="team-title" style="color:var(--cyan)">Команда 10 <span id="cnt-10" style="font-size:14px; color:var(--muted)"></span></div>
     <div class="staff-grid" id="grid-10"></div>
   </div>
 </div>
@@ -167,9 +168,6 @@ const db = firebase.database();
 
 const ROLE_NAMES = { 10:"Ст.Админ", 8:"Админ", 2:"Ст.Хелпер", 1:"Хелпер" };
 let isEditor = false, currentWeekKey = "", weekData = null, teamFilter = 'all';
-
-function prepareReader() { document.getElementById('team-select-ui').style.display = 'block'; }
-function showPassUI() { document.getElementById('pass-ui').style.display = 'block'; }
 
 function login(ed, team = 'all') {
   if(ed && document.getElementById('admin-pass').value !== '123456789Aa') return alert('Пароль!');
@@ -207,46 +205,56 @@ function render() {
   const grids = { 9: document.getElementById('grid-9'), 10: document.getElementById('grid-10') };
   grids[9].innerHTML = ""; grids[10].innerHTML = "";
   
-  // Видимость секций
   document.getElementById('section-9').classList.toggle('hidden', teamFilter !== 'all' && teamFilter !== 9);
   document.getElementById('section-10').classList.toggle('hidden', teamFilter !== 'all' && teamFilter !== 10);
 
-  let totalAll = 0, topP = { n: '—', v: 0 }, counts = { 9:0, 10:0 };
   const people = (weekData.people || []).sort((a,b) => b.role - a.role);
+  let counts = { 9:0, 10:0 };
 
   people.forEach(p => {
     if(search && !p.nick.toLowerCase().includes(search)) return;
     
-    let sum = 0;
-    for(let i=0; i<7; i++) sum += Number(weekData.entries?.[p.id]?.[i]?.online || 0);
-    totalAll += sum;
-    if(sum > topP.v) topP = { n: p.nick, v: sum };
-
-    const color = sum < 40 ? '#ef4444' : sum < 150 ? '#eab308' : '#22c55e';
+    let totalScreens = 0;
+    const days = [0,1,2,3,4,5,6];
+    days.forEach(i => totalScreens += Number(weekData.entries?.[p.id]?.[i]?.online || 0));
+    
+    const e = weekData.entries?.[p.id]?.[99] || { mutes:0, bans:0, tickets:0 };
+    
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
-      <div style="display:flex; justify-content:space-between;">
-        <div><b style="font-size:18px;">${p.nick}</b><br><small style="color:var(--violet); font-weight:800;">${ROLE_NAMES[p.role]}</small></div>
-        <button class="admin-only" onclick="removeP('${p.id}')" style="background:none; border:none; color:var(--muted); cursor:pointer;">✕</button>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="nick-box"><span class="role-badge">${ROLE_NAMES[p.role]}</span><br><b>${p.nick}</b></div>
+        <button class="admin-only" onclick="removeP('${p.id}')" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:20px;">×</button>
       </div>
-      <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(100, sum/3)}%; background:${color}"></div></div>
-      <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:800;"><span>ОЧКИ</span><span style="color:${color}">${sum}</span></div>
-      <div class="days-grid">${[0,1,2,3,4,5,6].map(i => `<div class="day-box"><small style="font-size:8px; color:var(--muted)">${['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'][i]}</small><input type="number" value="${weekData.entries?.[p.id]?.[i]?.online || 0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}',${i},'online',this.value)"></div>`).join('')}</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px;">
-        <div class="day-box"><small style="font-size:8px;">М</small><input type="number" value="${weekData.entries?.[p.id]?.[99]?.mutes||0}" onchange="upd('${p.id}',99,'mutes',this.value)"></div>
-        <div class="day-box"><small style="font-size:8px;">Б</small><input type="number" value="${weekData.entries?.[p.id]?.[99]?.bans||0}" onchange="upd('${p.id}',99,'bans',this.value)"></div>
-        <div class="day-box"><small style="font-size:8px;">Т</small><input type="number" value="${weekData.entries?.[p.id]?.[99]?.tickets||0}" onchange="upd('${p.id}',99,'tickets',this.value)"></div>
+
+      <div class="screens-grid">
+        ${['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].map((name, i) => `
+          <div class="screen-day">
+            <small>${name}</small>
+            <b>СКРИНЫ</b>
+            <input type="number" class="screen-input" value="${weekData.entries?.[p.id]?.[i]?.online || 0}" 
+              ${!isEditor?'disabled':''} onchange="upd('${p.id}',${i},'online',this.value)">
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="total-screens-row">
+        <span class="total-screens-label">ИТОГО СКРИНОВ</span>
+        <span class="total-screens-val">${totalScreens}</span>
+      </div>
+
+      <div class="mod-stats-list">
+        <div class="mod-item"><label>Муты</label><input type="number" class="mod-input" value="${e.mutes||0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}',99,'mutes',this.value)"></div>
+        <div class="mod-item"><label>Баны</label><input type="number" class="mod-input" value="${e.bans||0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}',99,'bans',this.value)"></div>
+        <div class="mod-item"><label>Тикеты</label><input type="number" class="mod-input" value="${e.tickets||0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}',99,'tickets',this.value)"></div>
       </div>
     `;
     const t = p.team || 9;
     if(grids[t]) { grids[t].appendChild(card); counts[t]++; }
   });
-
-  document.getElementById('total-pts').innerText = totalAll;
-  document.getElementById('top-player').innerText = topP.n;
-  document.getElementById('cnt-9').innerText = counts[9];
-  document.getElementById('cnt-10').innerText = counts[10];
+  document.getElementById('cnt-9').innerText = `(${counts[9]} чел.)`;
+  document.getElementById('cnt-10').innerText = `(${counts[10]} чел.)`;
 }
 
 function upd(id, d, f, v) { if(isEditor) db.ref(`activity/${currentWeekKey}/entries/${id}/${d}/${f}`).set(Number(v)||0); }
@@ -264,7 +272,7 @@ function addPerson() {
 function removeP(id) { if(confirm('Удалить?')) db.ref(`activity/${currentWeekKey}/people`).set(weekData.people.filter(x => x.id !== id)); }
 
 async function createNewWeek() {
-  const d = prompt("Дата:", new Date().toISOString().split('T')[0]);
+  const d = prompt("Дата (ГГГГ-ММ-ДД):", new Date().toISOString().split('T')[0]);
   if(d) { await db.ref(`activity/${d}`).set({ people: weekData.people || [], entries: {} }); location.reload(); }
 }
 </script>
