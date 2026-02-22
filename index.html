@@ -25,6 +25,7 @@
       --good: #22c55e;
       --warn: #f59e0b;
       --bad:  #ef4444;
+      --gold: #facc15;
     }
 
     * { box-sizing: border-box; transition: all 0.18s ease; }
@@ -40,6 +41,17 @@
     .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%) translateY(18px); background: rgba(15, 15, 30, 0.85); border: 1px solid rgba(255,255,255,0.10); padding: 10px 14px; border-radius: 14px; color: #fff; font-weight: 800; font-size: 13px; letter-spacing: .2px; opacity: 0; z-index: 99999; backdrop-filter: blur(14px); box-shadow: 0 12px 30px rgba(0,0,0,.35); display: flex; gap: 10px; align-items: center; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .toast i { width: 10px; height: 10px; border-radius: 50%; background: var(--good); box-shadow: 0 0 18px rgba(34,197,94,.55); display: inline-block; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(5, 5, 11, 0.85); display: flex; align-items: center; justify-content: center; z-index: 20000; backdrop-filter: blur(15px); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+    .modal-card { background: #0f0f1e; border: 1px solid var(--line); padding: 30px; border-radius: 30px; width: 90%; max-width: 450px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); transform: scale(0.9); transition: transform 0.3s ease; }
+    .modal-overlay.active .modal-card { transform: scale(1); }
+    .modal-header { margin-bottom: 20px; border-bottom: 1px solid var(--line); padding-bottom: 15px; }
+    .modal-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px; }
+    .modal-day-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 15px; margin: 10px 0; }
+    .modal-day-item { font-size: 10px; text-align: center; color: var(--muted); text-transform: uppercase; }
+    .modal-day-item b { display: block; color: var(--cyan); font-size: 14px; margin-top: 2px; }
+    .close-modal { margin-top: 20px; width: 100%; background: var(--violet); color: #fff; border: none; padding: 14px; border-radius: 15px; font-weight: 900; cursor: pointer; }
 
     #auth-overlay { position: fixed; inset: 0; background: rgba(5,5,11,0.82); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(25px); }
     .auth-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.10); padding: 40px; border-radius: 40px; text-align: center; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
@@ -88,6 +100,11 @@
     .mod-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.06); }
     .mod-input { width: 60px; background: none; border: none; color: #fff; text-align: right; font-size: 16px; font-weight: 900; outline: none; }
 
+    .stars-box { display: flex; justify-content: space-between; align-items: center; background: rgba(168, 85, 247, 0.1); border: 1px dashed var(--violet); padding: 10px 15px; border-radius: 15px; margin-top: 15px; cursor: pointer; }
+    .stars-box:hover { background: rgba(168, 85, 247, 0.2); border-style: solid; }
+    .stars-box label { font-size: 12px; font-weight: 900; color: var(--violet); text-transform: uppercase; cursor: pointer; }
+    .stars-display { color: var(--gold); font-size: 14px; font-weight: 900; text-transform: uppercase; }
+
     .admin-only { display: none !important; }
     body.editor-mode .admin-only { display: flex !important; }
     
@@ -100,6 +117,17 @@
   <div class="bg-anim"></div>
   <div class="bg-wrap"></div>
   <canvas id="particles"></canvas>
+
+  <div class="modal-overlay" id="starModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalNick" style="margin:0; color:var(--violet); font-weight:900;">Сотрудник</h3>
+        <small style="color:var(--muted)">Детализация начисления звёзд</small>
+      </div>
+      <div id="modalContent"></div>
+      <button class="close-modal" onclick="closeStarModal()">ЗАКРЫТЬ</button>
+    </div>
+  </div>
 
   <div class="toast" id="toast"><i></i><span id="toastText">Сохранено</span></div>
 
@@ -205,7 +233,6 @@ function applyLogin(ed) {
   isEditor = ed;
   if(ed) document.body.classList.add('editor-mode');
   else activeTeam = localStorage.getItem('staff_team');
-
   document.getElementById('auth-overlay').style.display = 'none';
   document.getElementById('main-wrap').classList.add('active');
   start();
@@ -254,29 +281,98 @@ function getProgressStyle(total) {
   return { width: Math.max(percentage, 5) + '%', background: color };
 }
 
+// Утилита для расчета звезд за число (скрины/наказания/тикеты)
+function calcStars(val, type) {
+  if (type === 'scr') {
+    if (val >= 1 && val <= 10) return 1;
+    if (val > 10 && val <= 40) return 2;
+    if (val > 40) return 3;
+  }
+  if (type === 'pen') {
+    if (val >= 5 && val <= 10) return 1;
+    if (val > 10 && val <= 17) return 2;
+    if (val >= 18) return 3;
+  }
+  if (type === 'tick') {
+    if (val > 0 && val < 5) return 1;
+    if (val >= 5 && val <= 10) return 2;
+    if (val >= 11) return 3;
+  }
+  return 0;
+}
+
+function showStarInfo(nick, scrTotal, pen, tick, id) {
+    const overlay = document.getElementById('starModal');
+    const content = document.getElementById('modalContent');
+    const days = ['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'];
+    let totalActivityStars = 0;
+
+    const dailyHtml = days.map((name, i) => {
+      const dailyScreens = Number(weekData.entries?.[id]?.[i]?.online || 0);
+      const dailyStars = calcStars(dailyScreens, 'scr');
+      totalActivityStars += dailyStars;
+      return `
+        <div class="modal-day-item">
+          ${name}
+          <b>${dailyScreens}</b>
+          ${dailyStars > 0 ? `<span style="color:var(--gold); font-size:9px; display:block;">+${dailyStars} ⭐</span>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    const s_pen = calcStars(pen, 'pen');
+    const s_tick = calcStars(tick, 'tick');
+    const finalTotal = totalActivityStars + s_pen + s_tick;
+
+    document.getElementById('modalNick').innerText = nick;
+    content.innerHTML = `
+      <div class="modal-row"><span>Скрины всего (неделя):</span> <b>${scrTotal}</b></div>
+      <div class="modal-day-list">${dailyHtml}</div>
+      <div class="modal-row" style="color:var(--cyan)"><span>Звёзды за активность:</span> <b>+${totalActivityStars}</b></div>
+      <hr style="border:0; border-top:1px solid var(--line); margin:15px 0;">
+      <div class="modal-row"><span>Наказания (М+Б):</span> <b>${pen}</b></div>
+      <div class="modal-row" style="color:var(--cyan)"><span>Звёзды за наказания:</span> <b>+${s_pen}</b></div>
+      <hr style="border:0; border-top:1px solid var(--line); margin:15px 0;">
+      <div class="modal-row"><span>Тикеты:</span> <b>${tick}</b></div>
+      <div class="modal-row" style="color:var(--cyan)"><span>Звёзды за тикеты:</span> <b>+${s_tick}</b></div>
+      <div style="margin-top:20px; text-align:center; font-size:24px; font-weight:900; color:var(--gold); text-shadow: 0 0 15px rgba(250,204,21,0.4)">
+        ИТОГО: ${finalTotal} ⭐
+      </div>
+    `;
+    overlay.classList.add('active');
+}
+
+function closeStarModal() {
+    document.getElementById('starModal').classList.remove('active');
+}
+
 function render() {
   const search = document.getElementById('searchField').value.toLowerCase();
   const filter = document.getElementById('teamFilter').value;
   const grids = { 9: document.getElementById('grid-9'), 10: document.getElementById('grid-10') };
   grids[9].innerHTML = ""; grids[10].innerHTML = "";
-  
   const people = (weekData.people || []).sort((a,b) => b.role - a.role);
   let counts = { 9:0, 10:0 };
 
   people.forEach(p => {
     if(search && !p.nick.toLowerCase().includes(search)) return;
-
     const team = p.team || 9;
-    
-    if (isEditor) {
-      if (filter !== 'all' && team != filter) return;
-    } else {
-      if (team != activeTeam) return;
-    }
+    if (isEditor) { if (filter !== 'all' && team != filter) return; } 
+    else { if (team != activeTeam) return; }
 
     let totalScreens = 0;
-    [0,1,2,3,4,5,6].forEach(i => totalScreens += Number(weekData.entries?.[p.id]?.[i]?.online || 0));
+    let activityStars = 0;
+    [0,1,2,3,4,5,6].forEach(i => {
+      const daily = Number(weekData.entries?.[p.id]?.[i]?.online || 0);
+      totalScreens += daily;
+      activityStars += calcStars(daily, 'scr');
+    });
+
     const e = weekData.entries?.[p.id]?.[99] || { mutes:0, bans:0, tickets:0 };
+    const penalties = (Number(e.mutes)||0) + (Number(e.bans)||0);
+    const tickets = Number(e.tickets)||0;
+    
+    const totalStars = activityStars + calcStars(penalties, 'pen') + calcStars(tickets, 'tick');
     const style = getProgressStyle(totalScreens);
 
     const card = document.createElement('div');
@@ -308,17 +404,17 @@ function render() {
         <div class="mod-item"><label>Баны</label><input type="number" class="mod-input" value="${e.bans||0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}',99,'bans',this.value)"></div>
         <div class="mod-item"><label>Тикеты</label><input type="number" class="mod-input" value="${e.tickets||0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}',99,'tickets',this.value)"></div>
       </div>
+      
+      <div class="stars-box admin-only" onclick="showStarInfo('${p.nick}', ${totalScreens}, ${penalties}, ${tickets}, '${p.id}')">
+        <label>Премия</label>
+        <span class="stars-display">${totalStars} звёзд</span>
+      </div>
     `;
 
-    if(grids[team]) { 
-      grids[team].appendChild(card);
-      counts[team]++; 
-    }
+    if(grids[team]) { grids[team].appendChild(card); counts[team]++; }
   });
-
   document.getElementById('cnt-9').innerText = `(${counts[9]} чел.)`;
   document.getElementById('cnt-10').innerText = `(${counts[10]} чел.)`;
-
   document.getElementById('section-9').style.display = (counts[9] > 0) ? 'block' : 'none';
   document.getElementById('section-10').style.display = (counts[10] > 0) ? 'block' : 'none';
 }
