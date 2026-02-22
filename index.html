@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>LoliLand Staff Dashboard</title>
+  <title>LoliLand Staff Dashboard — Elite</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
@@ -26,15 +26,14 @@
                   url("https://wallpaperaccess.com/full/8351177.jpg");
       background-size: cover; background-attachment: fixed;
       font-family: 'Inter', system-ui, sans-serif;
-      overflow-x: hidden;
     }
 
-    /* Модалка входа */
+    /* Меню входа */
     #auth-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(5, 5, 11, 0.98); backdrop-filter: blur(25px);
       display: flex; align-items: center; justify-content: center;
-      z-index: 9999; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 9999; transition: 0.6s;
     }
     .auth-card {
       background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line);
@@ -46,82 +45,72 @@
       padding: 20px 10px; border-radius: 20px; cursor: pointer; transition: 0.3s;
       display: flex; flex-direction: column; align-items: center; gap: 8px;
     }
-    .method-btn:hover { background: rgba(168, 85, 247, 0.15); border-color: var(--violet); transform: translateY(-5px); }
-    #pass-section { margin-top: 25px; display: none; flex-direction: column; gap: 12px; animation: slideUp 0.4s ease; }
-    @keyframes slideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+    .method-btn:hover { background: rgba(168, 85, 247, 0.15); border-color: var(--violet); }
+    #pass-section { margin-top: 25px; display: none; flex-direction: column; gap: 12px; }
     .auth-input { background: rgba(0,0,0,0.4); border: 1px solid var(--line); padding: 14px; border-radius: 14px; color: #fff; text-align: center; outline: none; }
     .go-btn { background: var(--violet); color: white; padding: 14px; border-radius: 14px; font-weight: 800; cursor: pointer; border: none; }
 
-    /* Интерфейс */
+    /* Контент */
     .wrap { max-width: 1450px; margin: 0 auto; filter: blur(20px); transition: 1s; opacity: 0; }
     .wrap.active { filter: blur(0); opacity: 1; }
 
     .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
     .brand h1 span { background: linear-gradient(90deg, var(--violet), var(--cyan)); -webkit-background-clip: text; color: transparent; font-weight: 900; }
     
-    /* Современный селектор недель */
+    /* Селектор недель */
     .week-selector-wrap { position: relative; display: inline-block; }
     .current-week-btn {
       background: rgba(255,255,255,0.05); border: 1px solid var(--line);
-      padding: 10px 20px; border-radius: 14px; color: #fff; font-weight: 700;
-      cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s;
+      padding: 10px 20px; border-radius: 14px; color: #fff; font-weight: 700; cursor: pointer;
     }
-    .current-week-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--violet); }
     .week-dropdown {
       position: absolute; top: 120%; left: 0; background: #12121e;
       border: 1px solid var(--line); border-radius: 16px; min-width: 220px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 100;
-      display: none; max-height: 300px; overflow-y: auto;
+      display: none; z-index: 100;
     }
-    .week-dropdown.show { display: block; animation: slideUp 0.3s ease; }
-    .week-item {
-      padding: 12px 20px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);
-      font-size: 14px; font-weight: 600; transition: 0.2s;
-    }
-    .week-item:hover { background: rgba(168, 85, 247, 0.1); color: var(--violet); }
-    .week-item.active { background: var(--violet); color: #fff; }
+    .week-dropdown.show { display: block; }
+    .week-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .week-item:hover { background: rgba(168, 85, 247, 0.15); }
 
     .admin-only { display: none !important; }
     body.editor-mode .admin-only { display: flex !important; }
 
-    .controls { background: var(--panel); border: 1px solid var(--line); border-radius: 24px; padding: 16px; backdrop-filter: blur(10px); margin-bottom: 20px; gap: 12px; }
-    .group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 150px; }
+    .controls { background: var(--panel); border: 1px solid var(--line); border-radius: 24px; padding: 16px; margin-bottom: 20px; gap: 12px; }
     
-    input, select { background: rgba(0,0,0,0.3); border: 1px solid var(--line); color: var(--text); padding: 12px; border-radius: 14px; outline: none; font-weight: 600; }
-
+    /* Стили для команд */
+    .team-section { margin-bottom: 40px; }
+    .team-title { font-size: 24px; font-weight: 900; margin-bottom: 20px; color: var(--cyan); border-left: 4px solid var(--violet); padding-left: 15px; }
     .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+    
     .card { background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 26px; padding: 18px; backdrop-filter: blur(10px); }
-    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-    .nick { font-size: 19px; font-weight: 900; }
-    .badge { font-size: 11px; font-weight: 800; color: var(--violet); background: rgba(168,85,247,0.1); padding: 4px 10px; border-radius: 8px; margin-top: 4px; display: inline-block; }
+    .card-top { display: flex; justify-content: space-between; margin-bottom: 15px; }
+    .badge { font-size: 11px; font-weight: 800; color: var(--violet); background: rgba(168,85,247,0.1); padding: 4px 10px; border-radius: 8px; }
 
-    .bar-wrap { margin-bottom: 15px; }
     .bar-bg { height: 10px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; }
-    .bar-fill { height: 100%; width: 0%; transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .bar-fill { height: 100%; transition: 0.6s; }
     .total-info { display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; margin-top: 6px; }
 
     .days { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
-    .day { background: rgba(0,0,0,0.25); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }
-    .dname { font-size: 9px; color: var(--muted); text-transform: uppercase; font-weight: 800; margin-bottom: 4px; }
+    .day { background: rgba(0,0,0,0.25); padding: 8px; border-radius: 12px; text-align: center; }
     .mini-input { width: 100%; border: none; background: transparent; color: #fff; text-align: center; font-size: 15px; font-weight: 700; outline: none; }
 
     .stats { display: flex; gap: 8px; }
     .stat { flex: 1; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 12px; text-align: center; }
-    .btn-del { background: rgba(239, 68, 68, 0.15); color: #ff8a8a; font-size: 10px; padding: 6px 10px; border-radius: 8px; border: none; cursor: pointer; }
+    .btn-del { background: rgba(239, 68, 68, 0.15); color: #ff8a8a; border: none; cursor: pointer; border-radius: 8px; padding: 5px 10px; }
   </style>
 </head>
-<body onclick="closeDropdowns(event)">
+<body onclick="document.getElementById('weekDropdown').classList.remove('show')">
 
 <div id="auth-overlay">
   <div class="auth-card">
-    <h2 style="margin:0; font-weight:900; font-size:24px;">LoliLand Staff</h2>
+    <h2 style="font-weight:900;">LoliLand Staff</h2>
     <div class="auth-methods">
-      <div class="method-btn" onclick="loginAsReader()"><b>📖 Читатель</b><small>Просмотр данных</small></div>
-      <div class="method-btn" onclick="showPassField()"><b>🛠 Редактор</b><small>Изменение статистики</small></div>
+      <div class="method-btn" onclick="loginAsReader()"><b>📖 Читатель</b></div>
+      <div class="method-btn" onclick="showPassField()"><b>🛠 Редактор</b></div>
     </div>
     <div id="pass-section">
       <input type="password" id="adminPass" class="auth-input" placeholder="Пароль">
-      <button class="go-btn" onclick="loginAsEditor()">Войти в панель</button>
+      <button class="go-btn" onclick="loginAsEditor()">Войти</button>
     </div>
   </div>
 </div>
@@ -131,9 +120,8 @@
     <div class="brand">
       <h1><span>LoliLand</span> Staff</h1>
       <div class="week-selector-wrap">
-        <div class="current-week-btn" onclick="toggleWeekDropdown(event)">
-          <span id="activeWeekLabel">Загрузка...</span>
-          <small>▼</small>
+        <div class="current-week-btn" onclick="event.stopPropagation(); document.getElementById('weekDropdown').classList.toggle('show')">
+          <span id="activeWeekLabel">Загрузка...</span> ▼
         </div>
         <div id="weekDropdown" class="week-dropdown"></div>
       </div>
@@ -143,24 +131,33 @@
     </div>
   </div>
 
-  <div class="controls admin-only">
-    <div class="group"><label style="font-size:10px; font-weight:800; color:var(--muted); margin-left:5px;">НИКНЕЙМ</label><input type="text" id="newNick" placeholder="Игрок..."></div>
-    <div class="group">
-      <label style="font-size:10px; font-weight:800; color:var(--muted); margin-left:5px;">РОЛЬ</label>
-      <select id="newRole">
-        <option value="10">Ст.Админ</option>
-        <option value="8">Админ</option>
-        <option value="6">Мл.Админ</option>
-        <option value="5">Ст.Модер</option>
-        <option value="3">Мл.Модер</option>
-        <option value="2">Ст.Хелпер</option>
-        <option value="1">Хелпер</option>
-      </select>
-    </div>
-    <button class="go-btn" onclick="addPerson()" style="height:46px; margin-top:19px;">＋ Добавить</button>
+  <div class="controls admin-only" style="display:flex; flex-wrap:wrap;">
+    <input type="text" id="newNick" placeholder="Никнейм" style="flex:2;">
+    <select id="newRole" style="flex:1;">
+      <option value="10">Ст.Админ</option>
+      <option value="8">Админ</option>
+      <option value="6">Мл.Админ</option>
+      <option value="5">Ст.Модер</option>
+      <option value="3">Мл.Модер</option>
+      <option value="2">Ст.Хелпер</option>
+      <option value="1">Хелпер</option>
+    </select>
+    <select id="newTeam" style="flex:1;">
+      <option value="9">Команда 9</option>
+      <option value="10">Команда 10</option>
+    </select>
+    <button class="go-btn" onclick="addPerson()" style="flex:1;">＋ Добавить</button>
   </div>
 
-  <div class="staff-grid" id="staffGrid"></div>
+  <div class="team-section">
+    <div class="team-title">Команда 9</div>
+    <div class="staff-grid" id="grid-team-9"></div>
+  </div>
+
+  <div class="team-section">
+    <div class="team-title">Команда 10</div>
+    <div class="staff-grid" id="grid-team-10"></div>
+  </div>
 </div>
 
 <script>
@@ -175,24 +172,21 @@ const db = firebase.database();
 const ROLE_NAMES = { 10:"Ст.Админ", 8:"Админ", 6:"Мл.Админ", 5:"Ст.Модер", 3:"Мл.Модер", 2:"Ст.Хелпер", 1:"Хелпер" };
 let isEditor = false, currentWeekKey = "", weekData = null;
 
-// Логика авторизации
 function loginAsReader() { isEditor = false; finishAuth(); }
 function showPassField() { document.getElementById('pass-section').style.display = 'flex'; }
 function loginAsEditor() {
   if (document.getElementById('adminPass').value === "123456789Aa") {
     isEditor = true; document.body.classList.add('editor-mode'); finishAuth();
-  } else alert("Ошибка пароля");
+  } else alert("Неверный пароль!");
 }
 
 async function finishAuth() {
-  document.getElementById('auth-overlay').style.opacity = "0";
-  document.getElementById('auth-overlay').style.pointerEvents = "none";
+  document.getElementById('auth-overlay').style.display = "none";
   document.querySelector('.wrap').classList.add('active');
   const snap = await db.ref("activity").limitToLast(1).once("value");
   loadWeek(snap.exists() ? Object.keys(snap.val())[0] : new Date().toISOString().split('T')[0]);
 }
 
-// Логика недель
 function loadWeek(key) {
   if (currentWeekKey) db.ref("activity/" + currentWeekKey).off();
   currentWeekKey = key;
@@ -204,26 +198,6 @@ function loadWeek(key) {
   });
 }
 
-async function updateWeekDropdown() {
-  const snap = await db.ref("activity").once("value");
-  const keys = Object.keys(snap.val() || {}).sort().reverse();
-  const container = document.getElementById("weekDropdown");
-  container.innerHTML = keys.map(k => `
-    <div class="week-item ${k === currentWeekKey ? 'active' : ''}" onclick="loadWeek('${k}')">
-      ${k === currentWeekKey ? '● ' : ''}${k}
-    </div>
-  `).join('');
-}
-
-function toggleWeekDropdown(e) {
-  e.stopPropagation();
-  document.getElementById("weekDropdown").classList.toggle("show");
-}
-
-function closeDropdowns(e) {
-  document.getElementById("weekDropdown").classList.remove("show");
-}
-
 function getProgColor(val) {
   if (val < 50) return "#ef4444";
   let hue = Math.min(120, ((val - 50) / 250) * 120); 
@@ -231,31 +205,33 @@ function getProgColor(val) {
 }
 
 function render() {
-  const grid = document.getElementById("staffGrid");
-  grid.innerHTML = "";
-  const sorted = (weekData.people || []).sort((a,b) => b.role - a.role);
+  const grids = { 9: document.getElementById("grid-team-9"), 10: document.getElementById("grid-team-10") };
+  grids[9].innerHTML = ""; grids[10].innerHTML = "";
 
-  sorted.forEach(p => {
+  const people = (weekData.people || []).sort((a,b) => b.role - a.role);
+
+  people.forEach(p => {
     let total = 0, daysHtml = "";
     for(let i=0; i<7; i++){
       const val = weekData.entries?.[p.id]?.[i]?.online || 0;
       total += Number(val);
-      daysHtml += `<div class="day"><div class="dname">${["Пн","Вт","Ср","Чт","Пт","Сб","Вс"][i]}</div><input type="number" class="mini-input" value="${val}" ${!isEditor?'disabled':''} onchange="valChange('${p.id}', ${i}, 'online', this.value)"></div>`;
+      daysHtml += `<div class="day"><div style="font-size:9px;">${["Пн","Вт","Ср","Чт","Пт","Сб","Вс"][i]}</div><input type="number" class="mini-input" value="${val}" ${!isEditor?'disabled':''} onchange="valChange('${p.id}', ${i}, 'online', this.value)"></div>`;
     }
     const e = weekData.entries?.[p.id]?.[99] || {};
     const color = getProgColor(total);
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      <div class="card-top"><div><div class="nick">${p.nick}</div><div class="badge">${ROLE_NAMES[p.role]}</div></div><button class="btn-del admin-only" onclick="removePerson('${p.id}')">Удалить</button></div>
-      <div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(100, (total/300)*100)}%; background:${color}"></div></div><div class="total-info"><span style="color:var(--muted)">ОЧКИ</span><span style="color:${color}">${total}</span></div></div>
-      <div class="days">${daysHtml}</div>
+      <div class="card-top"><div><div style="font-weight:900;">${p.nick}</div><div class="badge">${ROLE_NAMES[p.role]}</div></div><button class="btn-del admin-only" onclick="removePerson('${p.id}')">Удалить</button></div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(100, (total/300)*100)}%; background:${color}"></div></div>
+      <div class="total-info"><span>ОЧКИ</span><span style="color:${color}">${total}</span></div>
+      <div class="days" style="margin-top:10px;">${daysHtml}</div>
       <div class="stats">
-        <div class="stat"><div class="dname">Муты</div><input type="number" class="mini-input" value="${e.mutes||0}" ${!isEditor?'disabled':''} onchange="valChange('${p.id}', 99, 'mutes', this.value)"></div>
-        <div class="stat"><div class="dname">Баны</div><input type="number" class="mini-input" value="${e.bans||0}" ${!isEditor?'disabled':''} onchange="valChange('${p.id}', 99, 'bans', this.value)"></div>
-        <div class="stat"><div class="dname">Тикеты</div><input type="number" class="mini-input" value="${e.tickets||0}" ${!isEditor?'disabled':''} onchange="valChange('${p.id}', 99, 'tickets', this.value)"></div>
+        <div class="stat"><div style="font-size:9px;">Муты</div><input type="number" class="mini-input" value="${e.mutes||0}" ${!isEditor?'disabled':''} onchange="valChange('${p.id}', 99, 'mutes', this.value)"></div>
+        <div class="stat"><div style="font-size:9px;">Баны</div><input type="number" class="mini-input" value="${e.bans||0}" ${!isEditor?'disabled':''} onchange="valChange('${p.id}', 99, 'bans', this.value)"></div>
+        <div class="stat"><div style="font-size:9px;">Тикеты</div><input type="number" class="mini-input" value="${e.tickets||0}" ${!isEditor?'disabled':''} onchange="valChange('${p.id}', 99, 'tickets', this.value)"></div>
       </div>`;
-    grid.appendChild(card);
+    if (grids[p.team || 9]) grids[p.team || 9].appendChild(card);
   });
 }
 
@@ -266,9 +242,10 @@ function valChange(pid, dayIdx, field, val) {
 function addPerson() {
   const nick = document.getElementById("newNick").value.trim();
   const role = parseInt(document.getElementById("newRole").value);
+  const team = parseInt(document.getElementById("newTeam").value);
   if (nick && isEditor) {
     const people = weekData.people || [];
-    people.push({ id: "p_" + Date.now(), nick, role });
+    people.push({ id: "p_" + Date.now(), nick, role, team });
     db.ref("activity/" + currentWeekKey + "/people").set(people);
     document.getElementById("newNick").value = "";
   }
@@ -287,6 +264,12 @@ async function createNewWeek() {
     await db.ref("activity/" + next).set({ people: weekData.people || [], entries: {} });
     loadWeek(next);
   }
+}
+
+async function updateWeekDropdown() {
+  const snap = await db.ref("activity").once("value");
+  const keys = Object.keys(snap.val() || {}).sort().reverse();
+  document.getElementById("weekDropdown").innerHTML = keys.map(k => `<div class="week-item" onclick="loadWeek('${k}')">${k}</div>`).join('');
 }
 </script>
 </body>
