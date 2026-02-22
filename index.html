@@ -3,90 +3,196 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>LoliLand Staff Dashboard — Clean</title>
+  <title>LoliLand Staff Dashboard</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
   <style>
-    :root{
+    :root {
       --bg0:#05050b; --bg1:#090a15; --panel: rgba(12,12,24,.78);
       --line: rgba(255,255,255,.12); --text:#f3f4f6; --muted:#aab0c0;
-      --violet:#a855f7; --cyan:#22d3ee; --green:#22c55e; --amber:#f59e0b;
-      --r22: 22px; --shadow: 0 18px 55px rgba(0,0,0,.55);
+      --violet:#a855f7; --cyan:#22d3ee; --green:#22c55e;
+      --r22: 22px;
     }
-    *{ box-sizing:border-box; }
-    body{
-      margin:0; padding:20px; color:var(--text);
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0; padding: 20px; color: var(--text);
       background: radial-gradient(900px 550px at 15% -10%, rgba(168,85,247,.35), transparent 60%),
                   linear-gradient(180deg, rgba(5,5,11,.88), rgba(5,5,11,.95)),
                   url("https://wallpaperaccess.com/full/8351177.jpg");
       background-size: cover; background-attachment: fixed;
-      font-family: Inter, system-ui, sans-serif;
+      font-family: 'Inter', system-ui, sans-serif;
+      overflow-x: hidden;
     }
-    .wrap{ max-width: 1450px; margin: 0 auto; position:relative; }
-    .topbar{ display:flex; gap:16px; justify-content:space-between; flex-wrap:wrap; margin-bottom:16px; }
-    .brand{ flex: 1 1 420px; background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: var(--r22); padding: 16px; backdrop-filter: blur(10px); }
-    .brand h1 span{ background: linear-gradient(90deg, var(--violet), var(--cyan)); -webkit-background-clip:text; color:transparent; font-weight: 900; }
-    .pill{ display:inline-flex; align-items:center; gap:8px; padding: 8px 12px; border-radius: 999px; background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.1); color: var(--muted); font-size: 12px; }
-    .actions{ display:flex; gap:10px; }
-    button{ cursor:pointer; border:0; border-radius: 14px; padding: 12px 16px; color: var(--text); font-weight: 800; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); transition: 0.2s; }
-    .btn-main{ background: linear-gradient(180deg, var(--violet), var(--violet2)); }
-    .controls{ display:flex; flex-wrap:wrap; gap:12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r22); padding: 14px; backdrop-filter: blur(10px); margin-bottom: 16px; }
-    .group{ display:flex; flex-direction:column; gap:6px; flex: 1 1 200px; }
-    input, select{ width:100%; background: rgba(0,0,0,.3); border: 1px solid var(--line); color: var(--text); padding: 12px; border-radius: 14px; outline:none; font-weight: 700; }
-    .staff-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 14px; }
-    .card{ background: rgba(255,255,255,.03); border: 1px solid var(--line); border-radius: 24px; backdrop-filter: blur(10px); overflow:hidden; }
-    .card-inner{ padding: 16px; }
-    .card-top{ display:flex; justify-content:space-between; align-items: flex-start; margin-bottom: 12px; }
-    .nick{ font-size: 18px; font-weight: 900; margin-bottom: 4px; }
-    .badge{ display:inline-flex; align-items:center; gap:6px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; background: rgba(0,0,0,0.3); border: 1px solid var(--line); }
-    .role-dot{ width: 8px; height: 8px; border-radius: 50%; background: var(--violet); }
-    .progress{ display:flex; align-items:center; gap:10px; margin-bottom: 12px; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 14px; }
-    .bar{ flex:1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow:hidden; }
-    .bar i{ display:block; height:100%; background: linear-gradient(90deg, var(--green), var(--cyan)); transition: 0.3s; }
-    .days{ display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; margin-bottom: 12px; }
-    .day{ background: rgba(0,0,0,0.2); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
-    .dname{ font-size: 10px; font-weight: 900; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; }
-    .mini{ text-align:center; padding: 6px; font-size: 14px; border-radius: 8px; }
-    .stats{ display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom: 12px; }
-    .stat{ background: rgba(0,0,0,0.2); padding: 8px; border-radius: 12px; }
-    .sname{ font-size: 10px; font-weight: 800; color: var(--muted); margin-bottom: 4px; }
-    .foot{ display:flex; justify-content:space-between; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 14px; font-weight: 900; font-size: 12px; }
-    .kpi{ color: var(--green); }
-    .btn-del{ padding: 6px 10px; font-size: 10px; background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: #ff8a8a; }
+
+    /* Современное меню входа */
+    #auth-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(5, 5, 11, 0.98);
+      backdrop-filter: blur(25px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .auth-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      padding: 40px;
+      max-width: 450px; width: 90%;
+      text-align: center;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+    }
+
+    .auth-methods {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 30px;
+    }
+
+    .method-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      padding: 20px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: 0.3s;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+
+    .method-btn:hover {
+      background: rgba(168, 85, 247, 0.15);
+      border-color: var(--violet);
+      transform: translateY(-5px);
+    }
+
+    .method-btn b { font-size: 14px; display: block; }
+    .method-btn small { color: var(--muted); font-size: 11px; }
+
+    #pass-section {
+      margin-top: 25px;
+      display: none;
+      flex-direction: column; gap: 12px;
+      animation: slideUp 0.4s ease;
+    }
+
+    @keyframes slideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+
+    .auth-input {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--line);
+      padding: 14px; border-radius: 14px;
+      color: #fff; text-align: center; font-size: 16px; outline: none; transition: 0.3s;
+    }
+    .auth-input:focus { border-color: var(--violet); box-shadow: 0 0 15px rgba(168,85,247,0.3); }
+
+    .go-btn {
+      background: var(--violet);
+      color: white; padding: 14px; border-radius: 14px;
+      font-weight: 800; cursor: pointer; border: none;
+    }
+
+    /* Основной контент */
+    .wrap { max-width: 1450px; margin: 0 auto; filter: blur(20px); transition: 1s; opacity: 0; }
+    .wrap.active { filter: blur(0); opacity: 1; }
+
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+    .brand h1 span { background: linear-gradient(90deg, var(--violet), var(--cyan)); -webkit-background-clip: text; color: transparent; font-weight: 900; }
+    
+    .admin-only { display: none !important; }
+    body.editor-mode .admin-only { display: flex !important; }
+
+    .controls { background: var(--panel); border: 1px solid var(--line); border-radius: 24px; padding: 16px; backdrop-filter: blur(10px); margin-bottom: 20px; gap: 12px; }
+    .group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 150px; }
+    
+    input, select { background: rgba(0,0,0,0.3); border: 1px solid var(--line); color: var(--text); padding: 12px; border-radius: 14px; outline: none; font-weight: 600; }
+
+    .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+    .card { background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 26px; padding: 18px; backdrop-filter: blur(10px); }
+    
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+    .nick { font-size: 19px; font-weight: 900; letter-spacing: -0.5px; }
+    .badge { font-size: 11px; font-weight: 800; color: var(--violet); background: rgba(168,85,247,0.1); padding: 4px 10px; border-radius: 8px; margin-top: 4px; display: inline-block; }
+
+    /* Прогресс-бар */
+    .bar-wrap { margin-bottom: 15px; }
+    .bar-bg { height: 10px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; }
+    .bar-fill { height: 100%; width: 0%; transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .total-info { display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; margin-top: 6px; }
+
+    .days { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+    .day { background: rgba(0,0,0,0.25); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }
+    .dname { font-size: 9px; color: var(--muted); text-transform: uppercase; font-weight: 800; margin-bottom: 4px; }
+    .mini-input { width: 100%; border: none; background: transparent; color: #fff; text-align: center; font-size: 15px; font-weight: 700; outline: none; }
+
+    .stats { display: flex; gap: 8px; }
+    .stat { flex: 1; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 12px; text-align: center; }
+    .btn-del { background: rgba(239, 68, 68, 0.15); color: #ff8a8a; font-size: 10px; padding: 6px 10px; border-radius: 8px; border: none; cursor: pointer; }
+    
+    button:active { transform: scale(0.95); }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="brand">
-        <h1><span>LoliLand</span> Staff</h1>
-        <div class="pill">Неделя: <b id="weekDisplay">...</b></div>
+
+<div id="auth-overlay">
+  <div class="auth-card">
+    <h2 style="margin:0; font-weight:900; font-size:24px;">LoliLand Staff</h2>
+    <p style="color:var(--muted); font-size:14px; margin-top:8px;">Выберите режим доступа</p>
+    
+    <div class="auth-methods">
+      <div class="method-btn" onclick="loginAsReader()">
+        <b>📖 Читатель</b>
+        <small>Просмотр данных</small>
       </div>
-      <div class="actions">
-        <button onclick="openArchive()">📁 Архив</button>
-        <button class="btn-main" onclick="createNewWeek()">📅 Новая неделя</button>
+      <div class="method-btn" onclick="showPassField()">
+        <b>🛠 Редактор</b>
+        <small>Изменение статистики</small>
       </div>
     </div>
 
-    <div class="controls">
-      <div class="group"><label>Ник</label><input type="text" id="newNick"></div>
-      <div class="group"><label>Роль</label>
-        <select id="newRole">
-          <option value="8">Админ</option><option value="7">Ст.Админ</option>
-          <option value="6">Мл.Админ</option><option value="5">Ст.Модер</option>
-          <option value="3">Мл.Модер</option><option value="1">Хелпер</option>
-        </select>
-      </div>
-      <button class="btn-main" onclick="addPerson()" style="margin-top:20px">＋ Добавить</button>
+    <div id="pass-section">
+      <input type="password" id="adminPass" class="auth-input" placeholder="Пароль">
+      <button class="go-btn" onclick="loginAsEditor()">Войти в панель</button>
     </div>
+  </div>
+</div>
 
-    <div class="staff-grid" id="staffGrid"></div>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <h1><span>LoliLand</span> Staff</h1>
+      <div id="weekDisplay" style="font-size: 13px; color: var(--muted); font-weight: 600;"></div>
+    </div>
+    <div class="actions admin-only">
+      <button onclick="openArchive()" style="padding:10px 16px; border-radius:12px; background:rgba(255,255,255,0.05); color:#fff; border:1px solid var(--line); cursor:pointer;">📁 Архив</button>
+      <button class="go-btn" onclick="createNewWeek()" style="margin-left:8px;">📅 Новая неделя</button>
+    </div>
   </div>
 
+  <div class="controls admin-only">
+    <div class="group"><label style="font-size:11px; font-weight:800; color:var(--muted); margin-left:5px;">НИКНЕЙМ</label><input type="text" id="newNick" placeholder="Игрок..."></div>
+    <div class="group">
+      <label style="font-size:11px; font-weight:800; color:var(--muted); margin-left:5px;">РОЛЬ</label>
+      <select id="newRole">
+        <option value="10">Ст.Админ</option>
+        <option value="8">Админ</option>
+        <option value="6">Мл.Админ</option>
+        <option value="5">Ст.Модер</option>
+        <option value="3">Мл.Модер</option>
+        <option value="2">Ст.Хелпер</option>
+        <option value="1">Хелпер</option>
+      </select>
+    </div>
+    <button class="go-btn" onclick="addPerson()" style="height:46px; margin-top:20px;">＋ Добавить</button>
+  </div>
+
+  <div class="staff-grid" id="staffGrid"></div>
+</div>
+
 <script>
+// Настройки Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
   databaseURL: "https://aktiv-d4d72-default-rtdb.firebaseio.com",
@@ -94,11 +200,37 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const ROLE_NAMES = { 8:"Админ", 7:"Ст.Админ", 6:"Мл.Админ", 5:"Ст.Модер", 3:"Мл.Модер", 1:"Хелпер" };
-const DAY_NAMES = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
+
+const ROLE_NAMES = { 10:"Ст.Админ", 8:"Админ", 6:"Мл.Админ", 5:"Ст.Модер", 3:"Мл.Модер", 2:"Ст.Хелпер", 1:"Хелпер" };
+let isEditor = false;
 let currentWeekKey = "", weekData = null;
 
-async function init() {
+// Функции авторизации
+function loginAsReader() {
+  isEditor = false;
+  finishAuth();
+}
+
+function showPassField() {
+  document.getElementById('pass-section').style.display = 'flex';
+}
+
+function loginAsEditor() {
+  const pass = document.getElementById('adminPass').value;
+  if (pass === "123456789Aa") {
+    isEditor = true;
+    document.body.classList.add('editor-mode');
+    finishAuth();
+  } else {
+    alert("Доступ запрещен!");
+  }
+}
+
+async function finishAuth() {
+  document.getElementById('auth-overlay').style.opacity = "0";
+  document.getElementById('auth-overlay').style.pointerEvents = "none";
+  document.querySelector('.wrap').classList.add('active');
+  
   const snap = await db.ref("activity").limitToLast(1).once("value");
   let lastKey = snap.exists() ? Object.keys(snap.val())[0] : new Date().toISOString().split('T')[0];
   loadWeek(lastKey);
@@ -107,127 +239,108 @@ async function init() {
 function loadWeek(key) {
   if (currentWeekKey) db.ref("activity/" + currentWeekKey).off();
   currentWeekKey = key;
-  document.getElementById("weekDisplay").innerText = key;
+  document.getElementById("weekDisplay").innerText = "Текущий период: " + key;
   db.ref("activity/" + key).on("value", snap => {
     weekData = snap.val() || { people: [], entries: {} };
     render();
   });
 }
 
+// Расчет цвета (0 = Красный, 120 = Зеленый)
+function getProgColor(val) {
+  if (val < 50) return "#ef4444";
+  let hue = Math.min(120, ((val - 50) / 250) * 120); 
+  return `hsl(${hue}, 75%, 50%)`;
+}
+
 function render() {
   const grid = document.getElementById("staffGrid");
-  // Сохраняем фокус, если пользователь что-то печатает
-  const activeId = document.activeElement.id;
   grid.innerHTML = "";
 
-  (weekData.people || []).forEach(p => {
-    let screensTotal = 0;
+  const sorted = (weekData.people || []).sort((a,b) => b.role - a.role);
+
+  sorted.forEach(p => {
+    let total = 0;
     let daysHtml = "";
     for(let i=0; i<7; i++){
       const val = weekData.entries?.[p.id]?.[i]?.online || 0;
-      screensTotal += Number(val);
+      total += Number(val);
       daysHtml += `
         <div class="day">
-          <div class="dname">${DAY_NAMES[i]}</div>
-          <input type="number" class="mini" id="input-${p.id}-${i}" value="${val}"
-            oninput="valChange('${p.id}', ${i}, 'online', this.value)">
+          <div class="dname">${["Пн","Вт","Ср","Чт","Пт","Сб","Вс"][i]}</div>
+          <input type="number" class="mini-input" value="${val}" ${!isEditor?'disabled':''}
+            onchange="valChange('${p.id}', ${i}, 'online', this.value)">
         </div>`;
     }
 
     const e = weekData.entries?.[p.id]?.[99] || {};
-    const pct = Math.min(100, Math.round(screensTotal / 70 * 100));
+    const barW = Math.min(100, (total / 300) * 100);
+    const color = getProgColor(total);
 
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      <div class="card-inner">
-        <div class="card-top">
-          <div>
-            <div class="nick">${p.nick}</div>
-            <div class="badge"><span class="role-dot"></span>${ROLE_NAMES[p.role]}</div>
-          </div>
-          <button class="btn-del" onclick="removePerson('${p.id}')">Удалить</button>
+      <div class="card-top">
+        <div>
+          <div class="nick">${p.nick}</div>
+          <div class="badge">${ROLE_NAMES[p.role]}</div>
         </div>
-        <div class="progress">
-          <div class="bar"><i id="bar-${p.id}" style="width:${pct}%"></i></div>
-          <div class="val" id="total-txt-${p.id}">${screensTotal} / 70</div>
+        <button class="btn-del admin-only" onclick="removePerson('${p.id}')">Удалить</button>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-bg"><div class="bar-fill" style="width:${barW}%; background:${color}; box-shadow: 0 0 10px ${color}44"></div></div>
+        <div class="total-info">
+          <span style="color:var(--muted)">ПРОГРЕСС</span>
+          <span style="color:${color}">${total} ОЧКОВ</span>
         </div>
-        <div class="days">${daysHtml}</div>
-        <div class="stats">
-          <div class="stat"><div class="sname">Муты</div><input type="number" class="mini" value="${e.mutes||0}" oninput="valChange('${p.id}', 99, 'mutes', this.value)"></div>
-          <div class="stat"><div class="sname">Баны</div><input type="number" class="mini" value="${e.bans||0}" oninput="valChange('${p.id}', 99, 'bans', this.value)"></div>
-          <div class="stat"><div class="sname">Тикеты</div><input type="number" class="mini" value="${e.tickets||0}" oninput="valChange('${p.id}', 99, 'tickets', this.value)"></div>
-        </div>
+      </div>
+      <div class="days">${daysHtml}</div>
+      <div class="stats">
+        <div class="stat"><div class="dname">Муты</div><input type="number" class="mini-input" value="${e.mutes||0}" ${!isEditor?'disabled':''} onchange="valChange('${p.id}', 99, 'mutes', this.value)"></div>
+        <div class="stat"><div class="dname">Баны</div><input type="number" class="mini-input" value="${e.bans||0}" ${!isEditor?'disabled':''} onchange="valChange('${p.id}', 99, 'bans', this.value)"></div>
+        <div class="stat"><div class="dname">Тикеты</div><input type="number" class="mini-input" value="${e.tickets||0}" ${!isEditor?'disabled':''} onchange="valChange('${p.id}', 99, 'tickets', this.value)"></div>
       </div>`;
     grid.appendChild(card);
   });
-  
-  // Возвращаем фокус на поле, если оно еще существует
-  if(activeId) {
-    const el = document.getElementById(activeId);
-    if(el) {
-       el.focus();
-       // Ставим курсор в конец
-       const val = el.value;
-       el.value = '';
-       el.value = val;
-    }
-  }
 }
 
 function valChange(pid, dayIdx, field, val) {
-  const numVal = parseInt(val) || 0;
-  db.ref(`activity/${currentWeekKey}/entries/${pid}/${dayIdx}/${field}`).set(numVal);
-  
-  // Обновляем только цифры "на лету" без полного рендера всей сетки
-  if(field === 'online') {
-    let newTotal = 0;
-    for(let i=0; i<7; i++) {
-        const v = (i === dayIdx) ? numVal : (weekData.entries?.[pid]?.[i]?.online || 0);
-        newTotal += Number(v);
-    }
-    const bar = document.getElementById(`bar-${pid}`);
-    const txt = document.getElementById(`total-txt-${pid}`);
-    if(bar) bar.style.width = Math.min(100, Math.round(newTotal / 70 * 100)) + '%';
-    if(txt) txt.innerText = newTotal + ' / 70';
-  }
+  if(!isEditor) return;
+  db.ref(`activity/${currentWeekKey}/entries/${pid}/${dayIdx}/${field}`).set(parseInt(val) || 0);
 }
 
 function addPerson() {
   const nick = document.getElementById("newNick").value.trim();
-  const role = document.getElementById("newRole").value;
-  if (!nick) return;
-  const newPerson = { id: "p_" + Date.now(), nick, role };
+  const role = parseInt(document.getElementById("newRole").value);
+  if (!nick || !isEditor) return;
   const people = weekData.people || [];
-  people.push(newPerson);
+  people.push({ id: "p_" + Date.now(), nick, role });
   db.ref("activity/" + currentWeekKey + "/people").set(people);
   document.getElementById("newNick").value = "";
 }
 
 function removePerson(pid) {
-  if (confirm("Удалить игрока?")) {
-    const updatedPeople = weekData.people.filter(x => x.id !== pid);
-    db.ref(`activity/${currentWeekKey}/people`).set(updatedPeople);
+  if (confirm("Удалить сотрудника из списка?")) {
+    const updated = weekData.people.filter(x => x.id !== pid);
+    db.ref(`activity/${currentWeekKey}/people`).set(updated);
     db.ref(`activity/${currentWeekKey}/entries/${pid}`).remove();
   }
 }
 
 async function createNewWeek() {
-  const nextDate = prompt("Дата (ГГГГ-ММ-ДД):", new Date().toISOString().split('T')[0]);
-  if (!nextDate) return;
-  const currentPeople = weekData.people || [];
-  await db.ref("activity/" + nextDate).set({ weekStart: nextDate, people: currentPeople, entries: {} });
-  loadWeek(nextDate);
+  const next = prompt("Введите дату (ГГГГ-ММ-ДД):", new Date().toISOString().split('T')[0]);
+  if (next && isEditor) {
+    await db.ref("activity/" + next).set({ people: weekData.people || [], entries: {} });
+    loadWeek(next);
+  }
 }
 
 async function openArchive() {
   const snap = await db.ref("activity").once("value");
   const keys = Object.keys(snap.val() || {}).sort().reverse();
-  const choice = prompt("Недели:\n" + keys.join("\n"));
+  const choice = prompt("Доступные периоды:\n" + keys.join("\n"));
   if (choice && keys.includes(choice)) loadWeek(choice);
 }
-
-document.addEventListener("DOMContentLoaded", init);
 </script>
 </body>
 </html>
