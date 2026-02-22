@@ -3,277 +3,573 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>LoliLand Staff — Elite Dashboard</title>
+  <title>LoliLand Staff</title>
+
+  <link rel="icon" type="image/svg+xml"
+    href='data:image/svg+xml;utf8,
+    <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop stop-color="%23a855f7" offset="0"/>
+          <stop stop-color="%2322d3ee" offset="1"/>
+        </linearGradient>
+      </defs>
+      <rect width="128" height="128" rx="28" fill="%2305050b"/>
+      <rect x="12" y="12" width="104" height="104" rx="24" fill="url(%23g)" opacity="0.25"/>
+      <rect x="20" y="20" width="88" height="88" rx="22" fill="%230b0b16" opacity="0.9"/>
+      <rect x="38" y="52" width="16" height="16" fill="%23ffffff"/>
+      <rect x="74" y="52" width="16" height="16" fill="%23ffffff"/>
+      <rect x="42" y="56" width="8" height="8" fill="%2322d3ee"/>
+      <rect x="78" y="56" width="8" height="8" fill="%23a855f7"/>
+      <rect x="58" y="74" width="12" height="6" rx="2" fill="%23ffffff" opacity="0.9"/>
+    </svg>' />
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
   <style>
-    :root {
-      --bg: #05050b;
-      --panel: rgba(15, 15, 30, 0.75);
-      --line: rgba(255, 255, 255, 0.08);
-      --violet: #a855f7;
-      --cyan: #22d3ee;
-      --text: #f3f4f6;
-      --muted: #94a3b8;
+    :root{
+      --bg:#070710;
+      --panel:#0b0b16;
+      --panel2:#0f0f22;
+      --text:#eaeaf6;
+      --muted:#a9a9c7;
+      --violet:#a855f7;
+      --cyan:#22d3ee;
+      --line:rgba(255,255,255,0.08);
+      --good:#4ade80;
+      --bad:#fb7185;
     }
 
-    * { box-sizing: border-box; transition: all 0.2s ease; }
-    body {
-      margin: 0; padding: 20px; color: var(--text); background: var(--bg);
-      font-family: 'Inter', sans-serif;
-      background-image: radial-gradient(circle at 10% 20%, rgba(168, 85, 247, 0.1), transparent 40%);
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:
+        radial-gradient(900px 500px at 15% 15%, rgba(168,85,247,.20), transparent 60%),
+        radial-gradient(800px 500px at 85% 25%, rgba(34,211,238,.16), transparent 60%),
+        radial-gradient(900px 600px at 50% 90%, rgba(168,85,247,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg), #05050b);
+      color:var(--text);
+      min-height:100vh;
+      padding:24px;
     }
 
-    /* Вход */
-    #auth-overlay {
-      position: fixed; inset: 0; background: var(--bg); z-index: 10000;
-      display: flex; align-items: center; justify-content: center; backdrop-filter: blur(25px);
-    }
-    .auth-card {
-      background: rgba(255,255,255,0.02); border: 1px solid var(--line);
-      padding: 40px; border-radius: 40px; text-align: center; max-width: 400px; width: 90%;
-    }
-    .auth-btn {
-      width: 100%; padding: 15px; margin-top: 10px; border-radius: 15px; border: none;
-      font-weight: 800; cursor: pointer; font-size: 15px;
+    .container{
+      max-width:1220px;
+      margin:0 auto;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
     }
 
-    #team-select-ui { display: none; margin-top: 20px; }
-
-    /* Контент */
-    .wrap { max-width: 1400px; margin: 0 auto; display: none; }
-    .wrap.active { display: block; }
-    
-    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 20px; }
-    .view-switcher { display: flex; background: var(--panel); padding: 5px; border-radius: 15px; border: 1px solid var(--line); }
-    .view-btn { padding: 8px 15px; border-radius: 10px; border: none; background: none; color: var(--muted); cursor: pointer; font-weight: 700; }
-    .view-btn.active { background: var(--violet); color: #fff; }
-
-    .team-section { margin-bottom: 50px; }
-    .team-section.hidden { display: none; }
-    .team-title { font-size: 28px; font-weight: 900; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
-
-    /* Новая карточка */
-    .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
-    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 30px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-    .card:hover { border-color: var(--violet); }
-    
-    .nick-box b { font-size: 20px; color: #fff; }
-    .role-badge { font-size: 12px; font-weight: 900; color: var(--violet); text-transform: uppercase; }
-
-    /* Сетка скринов */
-    .screens-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
-    .screen-day { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 15px; text-align: center; border: 1px solid var(--line); }
-    .screen-day small { font-size: 9px; color: var(--muted); display: block; margin-bottom: 2px; }
-    .screen-day b { font-size: 8px; color: var(--violet); display: block; margin-bottom: 5px; }
-    .screen-input { width: 100%; background: none; border: none; color: #fff; text-align: center; font-size: 16px; font-weight: 900; outline: none; }
-
-    /* Итого скринов */
-    .total-screens-row { 
-        background: linear-gradient(90deg, rgba(168, 85, 247, 0.1), transparent);
-        padding: 12px 20px; border-radius: 15px; border: 1px solid rgba(168, 85, 247, 0.2);
-        display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+    .header{
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px 18px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 55px rgba(0,0,0,0.35);
     }
-    .total-screens-label { font-size: 12px; font-weight: 900; letter-spacing: 1px; }
-    .total-screens-val { font-size: 18px; font-weight: 900; color: var(--violet); }
 
-    /* Нижние колонки */
-    .mod-stats-list { display: flex; flex-direction: column; gap: 8px; }
-    .mod-item { 
-        display: flex; justify-content: space-between; align-items: center; 
-        background: rgba(255,255,255,0.03); padding: 12px 20px; border-radius: 15px; 
+    .top-bar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
     }
-    .mod-item label { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
-    .mod-input { width: 60px; background: none; border: none; color: #fff; text-align: right; font-size: 16px; font-weight: 900; outline: none; }
 
-    .admin-only { display: none !important; }
-    body.editor-mode .admin-only { display: flex !important; }
+    .search-input{
+      width:100%;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(10,10,20,0.75);
+      color:var(--text);
+      outline:none;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+    }
+    .search-input:focus{
+      border-color: rgba(168,85,247,0.55);
+      box-shadow: 0 0 0 3px rgba(168,85,247,0.18);
+    }
 
-    .search-input { background: var(--panel); border: 1px solid var(--line); padding: 12px 20px; border-radius: 15px; color: #fff; outline: none; }
+    .btn{
+      cursor:pointer;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(135deg, rgba(168,85,247,0.22), rgba(34,211,238,0.14));
+      color:var(--text);
+      font-weight:700;
+      letter-spacing:0.2px;
+      transition:transform .12s ease, filter .12s ease, border-color .12s ease;
+    }
+    .btn:hover{ transform: translateY(-1px); filter: brightness(1.05); border-color: rgba(255,255,255,0.16); }
+    .btn:active{ transform: translateY(0); }
+
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .chip{
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(10,10,20,0.55);
+      color:var(--muted);
+      font-weight:700;
+      font-size:12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .chip.active{
+      color:var(--text);
+      border-color: rgba(168,85,247,0.45);
+      background: rgba(168,85,247,0.16);
+    }
+
+    .sections{
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .section{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      border-radius:22px;
+      overflow:hidden;
+      box-shadow: 0 18px 55px rgba(0,0,0,0.32);
+    }
+
+    .section-head{
+      padding:16px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+
+    .section-title{
+      display:flex;
+      align-items:baseline;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .section-title h3{
+      margin:0;
+      font-size:16px;
+      font-weight:900;
+      letter-spacing:0.2px;
+    }
+    .count{
+      font-size:12px;
+      font-weight:800;
+      color:rgba(255,255,255,0.75);
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .grid{
+      padding:16px;
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap:12px;
+    }
+
+    .card{
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,0.09);
+      background: linear-gradient(180deg, rgba(15,15,34,0.72), rgba(10,10,20,0.62));
+      padding:14px;
+      position:relative;
+      overflow:hidden;
+      min-height:142px;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.35);
+    }
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: radial-gradient(320px 140px at 25% 0%, rgba(168,85,247,0.22), transparent 60%),
+                  radial-gradient(320px 140px at 75% 0%, rgba(34,211,238,0.16), transparent 60%);
+      pointer-events:none;
+      opacity:0.9;
+    }
+    .card > *{ position:relative; z-index:1; }
+
+    .card-top{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:10px;
+    }
+
+    .avatar{
+      width:46px;
+      height:46px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(135deg, rgba(168,85,247,0.35), rgba(34,211,238,0.20));
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:rgba(255,255,255,0.92);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+      flex:0 0 auto;
+    }
+
+    .nick-box b{
+      font-size:14px;
+      letter-spacing:0.2px;
+    }
+
+    .role-badge{
+      display:inline-block;
+      font-size:11px;
+      font-weight:900;
+      padding:6px 10px;
+      border-radius:999px;
+      color:#fff;
+      border:1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(135deg, rgba(168,85,247,0.35), rgba(34,211,238,0.18));
+      margin-bottom:6px;
+    }
+
+    .stats{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:6px;
+      color:rgba(255,255,255,0.82);
+      font-size:12px;
+      font-weight:700;
+    }
+    .stat{
+      padding:7px 10px;
+      border-radius:12px;
+      background: rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .muted{ color:var(--muted); }
+
+    .hidden{ display:none !important; }
+
+    .footer{
+      margin-top:8px;
+      text-align:center;
+      color:rgba(255,255,255,0.55);
+      font-size:12px;
+      padding:12px 0 6px;
+    }
+
+    .editor-panel{
+      margin-top:12px;
+      padding-top:12px;
+      border-top:1px solid rgba(255,255,255,0.06);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .editor-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .mini{
+      font-size:12px;
+      color:rgba(255,255,255,0.62);
+      font-weight:700;
+    }
+
+    .pill-good{ color:var(--good); }
+    .pill-bad{ color:var(--bad); }
+
   </style>
 </head>
-<body onclick="document.querySelectorAll('.week-dropdown').forEach(d=>d.classList.remove('show'))">
+<body>
+  <div class="container">
 
-<div id="auth-overlay">
-  <div class="auth-card">
-    <h1 style="margin:0 0 10px; font-weight:900;">LoliLand Staff</h1>
-    <button class="auth-btn" style="background: rgba(255,255,255,0.05); color: #fff;" onclick="document.getElementById('team-select-ui').style.display='block'">📖 Читатель</button>
-    <button class="auth-btn" style="background: var(--violet); color: #fff;" onclick="document.getElementById('pass-ui').style.display='block'">🛠 Редактор</button>
-    
-    <div id="pass-ui" style="display:none; margin-top:20px;">
-      <input type="password" id="admin-pass" class="search-input" placeholder="Пароль" style="width:100%;">
-      <button class="auth-btn" style="background: var(--violet); color: #fff; margin-top:10px;" onclick="login(true)">Войти</button>
-    </div>
+    <div class="header">
+      <div class="top-bar">
+        <div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div aria-hidden="true" style="
+              width:40px; height:40px; border-radius:14px;
+              background: linear-gradient(135deg, var(--violet), var(--cyan));
+              padding:2px;
+              box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+            ">
+              <div style="
+                width:100%; height:100%; border-radius:12px;
+                background: rgba(5,5,11,0.9);
+                display:grid; place-items:center;
+                border: 1px solid rgba(255,255,255,0.08);
+                font-weight: 900;
+                color: #fff;
+                letter-spacing: 1px;
+                font-size: 14px;
+              ">LL</div>
+            </div>
 
-    <div id="team-select-ui">
-      <p style="color:var(--muted); font-size:14px; margin-top:20px;">Выберите команду</p>
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-        <button class="auth-btn" style="background:rgba(255,255,255,0.1); color:#fff;" onclick="login(false, 9)">К9</button>
-        <button class="auth-btn" style="background:rgba(255,255,255,0.1); color:#fff;" onclick="login(false, 10)">К10</button>
+            <h2 style="margin:0; font-weight:900;">Staff Dashboard</h2>
+          </div>
+
+          <select id="weekSelect" class="search-input" style="margin-top:10px;" onchange="loadWeek(this.value)"></select>
+        </div>
+
+        <div style="min-width:280px; flex:1;">
+          <input id="searchField" class="search-input" placeholder="Поиск по нику..." oninput="render()" />
+          <div class="row" style="margin-top:10px;">
+            <div id="chip-all" class="chip active" onclick="setTeam('all')">Все</div>
+            <div id="chip-9" class="chip" onclick="setTeam(9)">Team 9</div>
+            <div id="chip-10" class="chip" onclick="setTeam(10)">Team 10</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="editor-panel">
+        <div class="mini">Добавить человека</div>
+        <div class="editor-row">
+          <input id="newNick" class="search-input" style="flex:2;" placeholder="Ник" />
+          <select id="newRole" class="search-input" style="flex:1;">
+            <option value="8">Ст.Админ</option>
+            <option value="7">Админ</option>
+            <option value="6">Мл.Админ</option>
+            <option value="5">Ст.Модер</option>
+            <option value="4">Модер</option>
+            <option value="3">Мл.Модер</option>
+            <option value="2">Ст.Хелпер</option>
+            <option value="1">Хелпер</option>
+          </select>
+          <select id="newTeam" class="search-input" style="flex:1;">
+            <option value="9">Team 9</option>
+            <option value="10">Team 10</option>
+          </select>
+          <button class="btn" onclick="addPerson()">Добавить</button>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<div class="wrap" id="main-wrap">
-  <div class="top-bar">
-    <div>
-      <h2 style="margin:0; font-weight:900;">Staff Dashboard</h2>
-      <select id="weekSelect" class="search-input" style="margin-top:10px;" onchange="loadWeek(this.value)"></select>
-    </div>
-    <div style="display:flex; gap:15px; align-items:center;">
-      <input type="text" id="searchField" class="search-input" placeholder="Поиск..." oninput="render()">
-      <div class="view-switcher admin-only">
-        <button class="view-btn active" onclick="setFilter('all', this)">Все</button>
-        <button class="view-btn" onclick="setFilter(9, this)">К9</button>
-        <button class="view-btn" onclick="setFilter(10, this)">К10</button>
+    <div class="sections">
+      <div id="section-9" class="section">
+        <div class="section-head">
+          <div class="section-title">
+            <h3>Team 9</h3>
+            <span id="count-9" class="count">0</span>
+          </div>
+        </div>
+        <div id="grid-9" class="grid"></div>
       </div>
-      <button class="auth-btn admin-only" style="margin:0; padding:10px 20px; background:var(--violet); color:#fff; width:auto;" onclick="createNewWeek()">+ Неделя</button>
+
+      <div id="section-10" class="section">
+        <div class="section-head">
+          <div class="section-title">
+            <h3>Team 10</h3>
+            <span id="count-10" class="count">0</span>
+          </div>
+        </div>
+        <div id="grid-10" class="grid"></div>
+      </div>
     </div>
-  </div>
 
-  <div class="admin-only" style="background:var(--panel); padding:20px; border-radius:25px; margin-bottom:40px; display:flex; gap:10px;">
-    <input type="text" id="newNick" class="search-input" placeholder="Ник" style="flex:2;">
-    <select id="newRole" class="search-input" style="flex:1;">
-      <option value="10">Ст.Админ</option><option value="8">Админ</option><option value="2">Ст.Хелпер</option><option value="1">Хелпер</option>
-    </select>
-    <select id="newTeam" class="search-input" style="flex:1;">
-      <option value="9">Команда 9</option><option value="10">Команда 10</option>
-    </select>
-    <button class="auth-btn" style="margin:0; flex:1; background:var(--violet); color:#fff;" onclick="addPerson()">Добавить</button>
+    <div class="footer">© Staff Dashboard</div>
   </div>
-
-  <div id="section-9" class="team-section">
-    <div class="team-title">Команда 9 <span id="cnt-9" style="font-size:14px; color:var(--muted)"></span></div>
-    <div class="staff-grid" id="grid-9"></div>
-  </div>
-
-  <div id="section-10" class="team-section">
-    <div class="team-title" style="color:var(--cyan)">Команда 10 <span id="cnt-10" style="font-size:14px; color:var(--muted)"></span></div>
-    <div class="staff-grid" id="grid-10"></div>
-  </div>
-</div>
 
 <script>
+/* ==========================
+   Firebase config
+========================== */
 const firebaseConfig = {
-  apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
-  databaseURL: "https://aktiv-d4d72-default-rtdb.firebaseio.com",
-  projectId: "aktiv-d4d72",
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  databaseURL: "YOUR_DATABASE_URL",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const ROLE_NAMES = { 10:"Ст.Админ", 8:"Админ", 2:"Ст.Хелпер", 1:"Хелпер" };
-let isEditor = false, currentWeekKey = "", weekData = null, teamFilter = 'all';
+/* ==========================
+   Roles + Sorting
+========================== */
+const ROLE_NAMES = {
+  // новая схема ролей
+  8: "Ст.Админ",
+  7: "Админ",
+  6: "Мл.Админ",
+  5: "Ст.Модер",
+  4: "Модер",
+  3: "Мл.Модер",
+  2: "Ст.Хелпер",
+  1: "Хелпер",
 
-function login(ed, team = 'all') {
-  if(ed && document.getElementById('admin-pass').value !== '123456789Aa') return alert('Пароль!');
-  isEditor = ed; teamFilter = team;
-  if(ed) document.body.classList.add('editor-mode');
-  document.getElementById('auth-overlay').style.display = 'none';
-  document.getElementById('main-wrap').classList.add('active');
-  start();
+  // совместимость со старым значением
+  10: "Ст.Админ"
+};
+
+function getRoleName(role) {
+  return ROLE_NAMES[Number(role)] || "Хелпер";
 }
 
-function setFilter(f, btn) {
-  teamFilter = f;
-  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  render();
+// ранги для сортировки (меньше = выше)
+function getRoleRank(role) {
+  const r = Number(role);
+
+  // совместимость со старой базой
+  if (r === 10) return 1; // Ст.Админ
+  if (r === 8)  return 2; // Админ (в старой схеме 8)
+  if (r === 2)  return 7; // Ст.Хелпер
+  if (r === 1)  return 8; // Хелпер
+
+  // новая схема
+  const map = { 8:1, 7:2, 6:3, 5:4, 4:5, 3:6, 2:7, 1:8 };
+  return map[r] || 999;
 }
 
-async function start() {
-  const snap = await db.ref("activity").limitToLast(10).once("value");
-  const weeks = Object.keys(snap.val() || {}).sort().reverse();
-  document.getElementById('weekSelect').innerHTML = weeks.map(w => `<option value="${w}">${w}</option>`).join('');
-  loadWeek(weeks[0]);
-}
+/* ==========================
+   Data
+========================== */
+let allWeeks = [];
+let currentWeekKey = null;
+let weekData = { people: [], entries: {} };
+let teamFilter = 'all';
 
-function loadWeek(key) {
+/* ==========================
+   Init
+========================== */
+db.ref("weeks").on("value", snap => {
+  const data = snap.val() || {};
+  allWeeks = Object.keys(data).sort().reverse();
+
+  const select = document.getElementById("weekSelect");
+  select.innerHTML = "";
+  allWeeks.forEach(k => {
+    const o = document.createElement("option");
+    o.value = k;
+    o.textContent = k;
+    select.appendChild(o);
+  });
+
+  if(!currentWeekKey && allWeeks.length){
+    loadWeek(allWeeks[0]);
+    select.value = allWeeks[0];
+  }
+});
+
+function loadWeek(key){
   currentWeekKey = key;
-  db.ref("activity/" + key).on("value", snap => {
+  db.ref("weeks/"+key).once("value").then(snap => {
     weekData = snap.val() || { people: [], entries: {} };
+    if(!weekData.people) weekData.people = [];
+    if(!weekData.entries) weekData.entries = {};
     render();
   });
 }
 
+function setTeam(t){
+  teamFilter = t;
+  document.getElementById("chip-all").classList.toggle("active", t === "all");
+  document.getElementById("chip-9").classList.toggle("active", t === 9);
+  document.getElementById("chip-10").classList.toggle("active", t === 10);
+  render();
+}
+
+/* ==========================
+   Render
+========================== */
 function render() {
   const search = document.getElementById('searchField').value.toLowerCase();
   const grids = { 9: document.getElementById('grid-9'), 10: document.getElementById('grid-10') };
   grids[9].innerHTML = ""; grids[10].innerHTML = "";
-  
+
   document.getElementById('section-9').classList.toggle('hidden', teamFilter !== 'all' && teamFilter !== 9);
   document.getElementById('section-10').classList.toggle('hidden', teamFilter !== 'all' && teamFilter !== 10);
 
-  const people = (weekData.people || []).sort((a,b) => b.role - a.role);
+  const people = (weekData.people || [])
+    .slice()
+    .sort((a, b) => {
+      const ra = getRoleRank(a.role);
+      const rb = getRoleRank(b.role);
+      if (ra !== rb) return ra - rb; // по должности
+      return (a.nick || "").localeCompare(b.nick || "", "ru", { sensitivity: "base" }); // потом по нику
+    });
+
   let counts = { 9:0, 10:0 };
 
   people.forEach(p => {
     if(search && !p.nick.toLowerCase().includes(search)) return;
-    
+
     let totalScreens = 0;
     const days = [0,1,2,3,4,5,6];
     days.forEach(i => totalScreens += Number(weekData.entries?.[p.id]?.[i]?.online || 0));
-    
+
     const e = weekData.entries?.[p.id]?.[99] || { mutes:0, bans:0, tickets:0 };
-    
+
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div class="nick-box"><span class="role-badge">${ROLE_NAMES[p.role]}</span><br><b>${p.nick}</b></div>
-        <button class="admin-only" onclick="removeP('${p.id}')" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:20px;">×</button>
+      <div class="card-top">
+        <div class="avatar">${(p.nick || "?").slice(0,2).toUpperCase()}</div>
+        <div class="nick-box"><span class="role-badge">${getRoleName(p.role)}</span><br><b>${p.nick}</b></div>
       </div>
-
-      <div class="screens-grid">
-        ${['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].map((name, i) => `
-          <div class="screen-day">
-            <small>${name}</small>
-            <b>СКРИНЫ</b>
-            <input type="number" class="screen-input" value="${weekData.entries?.[p.id]?.[i]?.online || 0}" 
-              ${!isEditor?'disabled':''} onchange="upd('${p.id}',${i},'online',this.value)">
-          </div>
-        `).join('')}
-      </div>
-
-      <div class="total-screens-row">
-        <span class="total-screens-label">ИТОГО СКРИНОВ</span>
-        <span class="total-screens-val">${totalScreens}</span>
-      </div>
-
-      <div class="mod-stats-list">
-        <div class="mod-item"><label>Муты</label><input type="number" class="mod-input" value="${e.mutes||0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}',99,'mutes',this.value)"></div>
-        <div class="mod-item"><label>Баны</label><input type="number" class="mod-input" value="${e.bans||0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}',99,'bans',this.value)"></div>
-        <div class="mod-item"><label>Тикеты</label><input type="number" class="mod-input" value="${e.tickets||0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}',99,'tickets',this.value)"></div>
+      <div class="stats">
+        <div class="stat">Скрины: <span class="${totalScreens>0?'pill-good':'muted'}">${totalScreens}</span></div>
+        <div class="stat">Муты: <span class="${Number(e.mutes)>0?'pill-bad':'muted'}">${Number(e.mutes)||0}</span></div>
+        <div class="stat">Баны: <span class="${Number(e.bans)>0?'pill-bad':'muted'}">${Number(e.bans)||0}</span></div>
+        <div class="stat">Тикеты: <span class="${Number(e.tickets)>0?'pill-good':'muted'}">${Number(e.tickets)||0}</span></div>
       </div>
     `;
-    const t = p.team || 9;
-    if(grids[t]) { grids[t].appendChild(card); counts[t]++; }
+
+    const team = Number(p.team) || 9;
+    if(team !== 9 && team !== 10) return;
+    if(teamFilter !== 'all' && teamFilter !== team) return;
+
+    grids[team].appendChild(card);
+    counts[team] += 1;
   });
-  document.getElementById('cnt-9').innerText = `(${counts[9]} чел.)`;
-  document.getElementById('cnt-10').innerText = `(${counts[10]} чел.)`;
+
+  document.getElementById('count-9').textContent = counts[9];
+  document.getElementById('count-10').textContent = counts[10];
 }
 
-function upd(id, d, f, v) { if(isEditor) db.ref(`activity/${currentWeekKey}/entries/${id}/${d}/${f}`).set(Number(v)||0); }
+/* ==========================
+   Add person (simple)
+========================== */
+function addPerson(){
+  if(!currentWeekKey) return;
 
-function addPerson() {
-  const nick = document.getElementById('newNick').value;
-  if(!nick) return;
-  const p = { id: 'p'+Date.now(), nick, role: Number(document.getElementById('newRole').value), team: Number(document.getElementById('newTeam').value) };
-  const list = weekData.people || [];
-  list.push(p);
-  db.ref(`activity/${currentWeekKey}/people`).set(list);
-  document.getElementById('newNick').value = "";
-}
+  const nick = (document.getElementById('newNick').value || "").trim();
+  const role = Number(document.getElementById('newRole').value || 1);
+  const team = Number(document.getElementById('newTeam').value || 9);
 
-function removeP(id) { if(confirm('Удалить?')) db.ref(`activity/${currentWeekKey}/people`).set(weekData.people.filter(x => x.id !== id)); }
+  if(!nick) return alert("Введи ник");
 
-async function createNewWeek() {
-  const d = prompt("Дата (ГГГГ-ММ-ДД):", new Date().toISOString().split('T')[0]);
-  if(d) { await db.ref(`activity/${d}`).set({ people: weekData.people || [], entries: {} }); location.reload(); }
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+  const person = { id, nick, role, team };
+  const newPeople = (weekData.people || []).concat([person]);
+
+  db.ref("weeks/"+currentWeekKey+"/people").set(newPeople).then(() => {
+    document.getElementById('newNick').value = "";
+  });
 }
 </script>
 </body>
