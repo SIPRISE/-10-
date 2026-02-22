@@ -44,6 +44,7 @@
     #auth-overlay { position: fixed; inset: 0; background: rgba(5,5,11,0.82); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(25px); }
     .auth-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.10); padding: 40px; border-radius: 40px; text-align: center; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
     .auth-card:before { content:""; position:absolute; inset:-2px; background: linear-gradient(135deg, rgba(168,85,247,0.22), rgba(34,211,238,0.10), transparent 60%); filter: blur(22px); z-index: -1; }
+    
     .auth-btn { width: 100%; padding: 15px; margin-top: 10px; border-radius: 15px; border: none; font-weight: 900; cursor: pointer; font-size: 15px; }
     .auth-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
 
@@ -90,7 +91,6 @@
     .admin-only { display: none !important; }
     body.editor-mode .admin-only { display: flex !important; }
     
-    /* Кнопка выхода */
     .logout-btn { background: rgba(255,68,68,0.1); color: var(--bad); border: 1px solid rgba(255,68,68,0.2); padding: 8px 15px; border-radius: 12px; font-size: 12px; font-weight: 900; cursor: pointer; }
     .logout-btn:hover { background: var(--bad); color: #fff; }
   </style>
@@ -106,11 +106,23 @@
   <div id="auth-overlay">
     <div class="auth-card">
       <h1 style="margin:0 0 10px; font-weight:900;">LoliLand Staff</h1>
-      <button class="auth-btn" style="background: rgba(255,255,255,0.05); color: #fff;" onclick="login(false)">📖 Читатель</button>
-      <button class="auth-btn" style="background: var(--violet); color: #fff;" onclick="document.getElementById('pass-ui').style.display='block'">🛠 Редактор</button>
-      <div id="pass-ui" style="display:none; margin-top:20px;">
+      
+      <div id="auth-main">
+        <button class="auth-btn" style="background: rgba(255,255,255,0.05); color: #fff;" onclick="showTeamSelect()">📖 Читатель</button>
+        <button class="auth-btn" style="background: var(--violet); color: #fff;" onclick="showPassInput()">🛠 Редактор</button>
+      </div>
+
+      <div id="team-select" style="display:none; margin-top:10px;">
+        <p style="font-size:13px; color:var(--muted)">Выберите вашу команду:</p>
+        <button class="auth-btn" style="background: var(--violet); color: #fff;" onclick="login(false, 9)">Команда 9</button>
+        <button class="auth-btn" style="background: var(--cyan); color: #000;" onclick="login(false, 10)">Команда 10</button>
+        <button class="auth-btn" style="background: transparent; color: #fff; margin-top:5px; font-size:12px;" onclick="resetAuthUI()">Назад</button>
+      </div>
+
+      <div id="pass-ui" style="display:none; margin-top:10px;">
         <input type="password" id="admin-pass" class="search-input" placeholder="Пароль" style="width:100%;">
         <button class="auth-btn" style="background: var(--violet); color: #fff; margin-top:10px;" onclick="login(true)">Войти</button>
+        <button class="auth-btn" style="background: transparent; color: #fff; margin-top:5px; font-size:12px;" onclick="resetAuthUI()">Назад</button>
       </div>
     </div>
   </div>
@@ -124,8 +136,16 @@
             <button class="logout-btn" onclick="logout()">Выйти</button>
         </div>
       </div>
+   
       <div style="display:flex; gap:15px; align-items:center;">
         <input type="text" id="searchField" class="search-input" placeholder="Поиск." oninput="render()">
+        
+        <select id="teamFilter" class="search-input admin-only" onchange="render()" style="background: var(--violet); border:none; cursor:pointer;">
+          <option value="all">Все команды</option>
+          <option value="9">Команда 9</option>
+          <option value="10">Команда 10</option>
+        </select>
+
         <button class="auth-btn admin-only" style="margin:0; padding:10px 20px; background:var(--violet); color:#fff; width:auto;" onclick="createNewWeek()">+ Неделя</button>
       </div>
     </div>
@@ -151,18 +171,32 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 const ROLE_NAMES = { 80:"Ст.Админ", 70:"Админ", 60:"Мл.Админ", 50:"Ст.Модератор", 40:"Модератор", 30:"Мл.Модератор", 20:"Ст.Хелпер", 10:"Хелпер" };
-const MASTER_PASS = '123456789Aa'; // Твой пароль
-let isEditor = false, currentWeekKey = "", weekData = null;
+const MASTER_PASS = '123456789Aa';
+let isEditor = false, currentWeekKey = "", weekData = null, activeTeam = null;
 
-// --- СИСТЕМА ЛОГИНА С ПАМЯТЬЮ ---
+function showTeamSelect() {
+  document.getElementById('auth-main').style.display = 'none';
+  document.getElementById('team-select').style.display = 'block';
+}
+function showPassInput() {
+  document.getElementById('auth-main').style.display = 'none';
+  document.getElementById('pass-ui').style.display = 'block';
+}
+function resetAuthUI() {
+  document.getElementById('auth-main').style.display = 'block';
+  document.getElementById('team-select').style.display = 'none';
+  document.getElementById('pass-ui').style.display = 'none';
+}
 
-function login(ed) {
+function login(ed, team = null) {
   if (ed) {
     const pass = document.getElementById('admin-pass').value;
     if (pass !== MASTER_PASS) return alert('Неверный пароль!');
     localStorage.setItem('staff_auth', 'editor');
   } else {
     localStorage.setItem('staff_auth', 'reader');
+    localStorage.setItem('staff_team', team);
+    activeTeam = team;
   }
   applyLogin(ed);
 }
@@ -170,6 +204,8 @@ function login(ed) {
 function applyLogin(ed) {
   isEditor = ed;
   if(ed) document.body.classList.add('editor-mode');
+  else activeTeam = localStorage.getItem('staff_team');
+
   document.getElementById('auth-overlay').style.display = 'none';
   document.getElementById('main-wrap').classList.add('active');
   start();
@@ -177,17 +213,15 @@ function applyLogin(ed) {
 
 function logout() {
   localStorage.removeItem('staff_auth');
+  localStorage.removeItem('staff_team');
   location.reload();
 }
 
-// Авто-проверка при загрузке
 window.onload = () => {
   const auth = localStorage.getItem('staff_auth');
   if (auth === 'editor') applyLogin(true);
   else if (auth === 'reader') applyLogin(false);
 };
-
-// --- ОСНОВНАЯ ЛОГИКА ---
 
 function showToast(text="Сохранено") {
   const t = document.getElementById('toast');
@@ -222,14 +256,23 @@ function getProgressStyle(total) {
 
 function render() {
   const search = document.getElementById('searchField').value.toLowerCase();
+  const filter = document.getElementById('teamFilter').value;
   const grids = { 9: document.getElementById('grid-9'), 10: document.getElementById('grid-10') };
   grids[9].innerHTML = ""; grids[10].innerHTML = "";
-
+  
   const people = (weekData.people || []).sort((a,b) => b.role - a.role);
   let counts = { 9:0, 10:0 };
 
   people.forEach(p => {
     if(search && !p.nick.toLowerCase().includes(search)) return;
+
+    const team = p.team || 9;
+    
+    if (isEditor) {
+      if (filter !== 'all' && team != filter) return;
+    } else {
+      if (team != activeTeam) return;
+    }
 
     let totalScreens = 0;
     [0,1,2,3,4,5,6].forEach(i => totalScreens += Number(weekData.entries?.[p.id]?.[i]?.online || 0));
@@ -267,17 +310,22 @@ function render() {
       </div>
     `;
 
-    const t = p.team || 9;
-    if(grids[t]) { grids[t].appendChild(card); counts[t]++; }
+    if(grids[team]) { 
+      grids[team].appendChild(card);
+      counts[team]++; 
+    }
   });
 
   document.getElementById('cnt-9').innerText = `(${counts[9]} чел.)`;
   document.getElementById('cnt-10').innerText = `(${counts[10]} чел.)`;
+
+  document.getElementById('section-9').style.display = (counts[9] > 0) ? 'block' : 'none';
+  document.getElementById('section-10').style.display = (counts[10] > 0) ? 'block' : 'none';
 }
 
 function upd(id, d, f, v) {
   if(isEditor) {
-    db.ref(`activity/${currentWeekKey}/entries/${id}/${d}/${f}`).set(Number(v)||0);
+    db.ref("activity/" + currentWeekKey + "/entries/" + id + "/" + d + "/" + f).set(Number(v)||0);
     showToast();
   }
 }
@@ -285,12 +333,11 @@ function upd(id, d, f, v) {
 async function createNewWeek() {
   const d = prompt("Дата (ГГГГ-ММ-ДД):", new Date().toISOString().split('T')[0]);
   if(d) {
-    await db.ref(`activity/${d}`).set({ people: weekData.people || [], entries: {} });
+    await db.ref("activity/" + d).set({ people: weekData.people || [], entries: {} });
     location.reload();
   }
 }
 
-// Эффект частиц
 (function particles(){
   const c = document.getElementById('particles');
   const ctx = c.getContext('2d');
