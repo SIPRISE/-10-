@@ -107,9 +107,20 @@
 
     .admin-only { display: none !important; }
     body.editor-mode .admin-only { display: flex !important; }
-    
+
     .logout-btn { background: rgba(255,68,68,0.1); color: var(--bad); border: 1px solid rgba(255,68,68,0.2); padding: 8px 15px; border-radius: 12px; font-size: 12px; font-weight: 900; cursor: pointer; }
     .logout-btn:hover { background: var(--bad); color: #fff; }
+
+    /* Новая кнопка удаления */
+    .delete-staff-btn { 
+      position: absolute; top: 15px; right: 15px; 
+      background: rgba(239, 68, 68, 0.1); color: var(--bad); 
+      border: 1px solid rgba(239, 68, 68, 0.2); width: 28px; height: 28px; 
+      border-radius: 8px; cursor: pointer; align-items: center; justify-content: center;
+      font-size: 16px; line-height: 1; display: none;
+    }
+    body.editor-mode .delete-staff-btn { display: flex; }
+    .delete-staff-btn:hover { background: var(--bad); color: #fff; }
   </style>
 </head>
 
@@ -202,6 +213,19 @@ const ROLE_NAMES = { 80:"Ст.Админ", 70:"Админ", 60:"Мл.Админ"
 const MASTER_PASS = '123456789Aa';
 let isEditor = false, currentWeekKey = "", weekData = null, activeTeam = null;
 
+// ФОРМАТИРОВАНИЕ НЕДЕЛИ (Понедельник - Воскресенье)
+function getWeekInterval(dateStr) {
+  const date = new Date(dateStr);
+  const day = date.getDay() || 7;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() - day + 1);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  
+  const f = (d) => d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+  return `${f(monday)} - ${f(sunday)}`;
+}
+
 function showTeamSelect() {
   document.getElementById('auth-main').style.display = 'none';
   document.getElementById('team-select').style.display = 'block';
@@ -260,7 +284,8 @@ function showToast(text="Сохранено") {
 async function start() {
   const snap = await db.ref("activity").limitToLast(10).once("value");
   const weeks = Object.keys(snap.val() || {}).sort().reverse();
-  document.getElementById('weekSelect').innerHTML = weeks.map(w => `<option value="${w}">${w}</option>`).join('');
+  // Выводим в селект интервалы вместо просто даты
+  document.getElementById('weekSelect').innerHTML = weeks.map(w => `<option value="${w}">${getWeekInterval(w)}</option>`).join('');
   loadWeek(weeks[0]);
 }
 
@@ -281,7 +306,6 @@ function getProgressStyle(total) {
   return { width: Math.max(percentage, 5) + '%', background: color };
 }
 
-// Утилита для расчета звезд за число (скрины/наказания/тикеты)
 function calcStars(val, type) {
   if (type === 'scr') {
     if (val >= 1 && val <= 10) return 1;
@@ -346,6 +370,15 @@ function closeStarModal() {
     document.getElementById('starModal').classList.remove('active');
 }
 
+// УДАЛЕНИЕ СОТРУДНИКА
+async function deleteStaff(id, nick) {
+  if(!confirm(`Удалить ${nick} из этой недели?`)) return;
+  const newPeople = (weekData.people || []).filter(p => p.id !== id);
+  await db.ref("activity/" + currentWeekKey + "/people").set(newPeople);
+  await db.ref("activity/" + currentWeekKey + "/entries/" + id).remove();
+  showToast("Удалено");
+}
+
 function render() {
   const search = document.getElementById('searchField').value.toLowerCase();
   const filter = document.getElementById('teamFilter').value;
@@ -378,6 +411,7 @@ function render() {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
+      <button class="delete-staff-btn" onclick="deleteStaff('${p.id}', '${p.nick}')">×</button>
       <div class="card-header">
         <div class="avatar-circle">✦</div>
         <div class="nick-box">
@@ -427,7 +461,7 @@ function upd(id, d, f, v) {
 }
 
 async function createNewWeek() {
-  const d = prompt("Дата (ГГГГ-ММ-ДД):", new Date().toISOString().split('T')[0]);
+  const d = prompt("Дата начала недели (ГГГГ-ММ-ДД):", new Date().toISOString().split('T')[0]);
   if(d) {
     await db.ref("activity/" + d).set({ people: weekData.people || [], entries: {} });
     location.reload();
