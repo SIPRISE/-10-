@@ -7,7 +7,8 @@
 
   <link rel="icon" type="image/svg+xml"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2357B33E'/%3E%3Crect x='3' y='3' width='3' height='3' fill='%23000'/%3E%3Crect x='10' y='3' width='3' height='3' fill='%23000'/%3E%3Crect x='6' y='6' width='4' height='3' fill='%23000'/%3E%3Crect x='5' y='9' width='2' height='4' fill='%23000'/%3E%3Crect x='9' y='9' width='2' height='4' fill='%23000'/%3E%3C/svg%3E">
-  
+  <meta name="theme-color" content="#57B33E">
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -24,48 +25,101 @@
       --good: #22c55e;
       --warn: #f59e0b;
       --bad:  #ef4444;
+      --gold: #facc15;
     }
 
     * { box-sizing: border-box; transition: all 0.18s ease; }
-    html, body { height: 100%; margin: 0; padding: 20px; color: var(--text); background: var(--bg); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+    html, body { height: 100%; }
+    body { margin: 0; padding: 20px; color: var(--text); background: var(--bg); font-family: 'Inter', sans-serif; overflow-x: hidden; }
 
-    /* ЖИВОЙ ФОН */
     .bg-wrap { position: fixed; inset: 0; z-index: -3; background: radial-gradient(circle at 10% 20%, rgba(168, 85, 247, 0.18), transparent 45%), radial-gradient(circle at 85% 30%, rgba(34, 211, 238, 0.12), transparent 45%), radial-gradient(circle at 50% 85%, rgba(168, 85, 247, 0.10), transparent 55%); filter: saturate(1.15); }
     .bg-anim { position: fixed; inset: -30vh -30vw; z-index: -4; background: conic-gradient(from 180deg, rgba(168,85,247,0.12), rgba(34,211,238,0.10), rgba(168,85,247,0.12)); animation: spin 14s linear infinite; opacity: .55; filter: blur(70px); }
     @keyframes spin { to { transform: rotate(360deg); } }
+
     #particles { position: fixed; inset: 0; z-index: -2; width: 100vw; height: 100vh; pointer-events: none; opacity: .55; }
 
-    /* ФИКС SELECT (чтобы не было белых выпадашек) */
-    select, option { background-color: #0f0f1e !important; color: white !important; border: 1px solid var(--line); }
+    .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%) translateY(18px); background: rgba(15, 15, 30, 0.85); border: 1px solid rgba(255,255,255,0.10); padding: 10px 14px; border-radius: 14px; color: #fff; font-weight: 800; font-size: 13px; letter-spacing: .2px; opacity: 0; z-index: 99999; backdrop-filter: blur(14px); box-shadow: 0 12px 30px rgba(0,0,0,.35); display: flex; gap: 10px; align-items: center; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast i { width: 10px; height: 10px; border-radius: 50%; background: var(--good); box-shadow: 0 0 18px rgba(34,197,94,.55); display: inline-block; }
 
-    .search-input { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 18px; border-radius: 14px; color: #fff; outline: none; backdrop-filter: blur(10px); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(5, 5, 11, 0.85); display: flex; align-items: center; justify-content: center; z-index: 20000; backdrop-filter: blur(15px); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+    .modal-card { background: #0f0f1e; border: 1px solid var(--line); padding: 30px; border-radius: 30px; width: 90%; max-width: 450px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); transform: scale(0.9); transition: transform 0.3s ease; }
+    .modal-overlay.active .modal-card { transform: scale(1); }
+    .modal-header { margin-bottom: 20px; border-bottom: 1px solid var(--line); padding-bottom: 15px; }
+    .modal-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px; }
+    .modal-day-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 15px; margin: 10px 0; }
+    .modal-day-item { font-size: 10px; text-align: center; color: var(--muted); text-transform: uppercase; }
+    .modal-day-item b { display: block; color: var(--cyan); font-size: 14px; margin-top: 2px; }
+    .close-modal { margin-top: 20px; width: 100%; background: var(--violet); color: #fff; border: none; padding: 14px; border-radius: 15px; font-weight: 900; cursor: pointer; }
 
-    .card { background: rgba(15, 15, 30, 0.64); border: 1px solid rgba(255, 255, 255, 0.10); border-radius: 32px; padding: 25px; box-shadow: 0 12px 42px rgba(0,0,0,0.35); position: relative; overflow: hidden; backdrop-filter: blur(14px); animation: popIn .4s ease forwards; }
-    @keyframes popIn { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    #auth-overlay { position: fixed; inset: 0; background: rgba(5,5,11,0.82); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(25px); }
+    .auth-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.10); padding: 40px; border-radius: 40px; text-align: center; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+    .auth-card:before { content:""; position:absolute; inset:-2px; background: linear-gradient(135deg, rgba(168,85,247,0.22), rgba(34,211,238,0.10), transparent 60%); filter: blur(22px); z-index: -1; }
+    
+    .auth-btn { width: 100%; padding: 15px; margin-top: 10px; border-radius: 15px; border: none; font-weight: 900; cursor: pointer; font-size: 15px; }
+    .auth-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
 
-    .avatar-circle { width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, var(--violet), var(--cyan)); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; box-shadow: 0 8px 20px rgba(168, 85, 247, 0.2); }
+    .wrap { max-width: 1400px; margin: 0 auto; display: none; }
+    .wrap.active { display: block; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 20px; }
 
-    .goal { margin: 18px 0; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 12px; }
-    .bar { width: 100%; height: 8px; border-radius: 999px; background: rgba(0,0,0,0.3); overflow: hidden; margin-top: 8px; }
-    .bar > div { height: 100%; transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .search-input { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.10); padding: 12px 20px; border-radius: 15px; color: #fff; outline: none; backdrop-filter: blur(12px); }
 
-    .screens-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-    .screen-day { background: rgba(0,0,0,0.25); padding: 10px; border-radius: 14px; text-align: center; border: 1px solid var(--line); }
+    .team-section { margin-bottom: 50px; }
+    .team-title { font-size: 28px; font-weight: 900; margin-bottom: 14px; display: flex; align-items: center; gap: 15px; }
+
+    .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
+
+    .card { background: rgba(15, 15, 30, 0.64); border: 1px solid rgba(255, 255, 255, 0.10); border-radius: 32px; padding: 25px; box-shadow: 0 12px 42px rgba(0,0,0,0.35); position: relative; overflow: hidden; transform: translateY(6px); opacity: 0; animation: popIn .42s ease forwards; backdrop-filter: blur(14px); will-change: transform; }
+    @keyframes popIn { to { transform: translateY(0); opacity: 1; } }
+    .card:before { content:""; position:absolute; inset:-2px; background: linear-gradient(135deg, rgba(168,85,247,0.18), rgba(34,211,238,0.10), transparent 60%); opacity: .7; filter: blur(18px); z-index: -1; }
+    .card:hover { border-color: rgba(168, 85, 247, 0.45); box-shadow: 0 18px 65px rgba(168,85,247,0.10), 0 18px 65px rgba(34,211,238,0.06); }
+
+    .card-header { display: flex; align-items: center; gap: 15px; margin-bottom: 14px; }
+    .avatar-circle { width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, var(--violet), var(--cyan)); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; box-shadow: 0 10px 25px rgba(168, 85, 247, 0.18); position: relative; overflow: hidden; }
+
+    .status-dot{ width: 9px; height: 9px; border-radius: 50%; margin-left: 8px; background: var(--muted); display:inline-block; vertical-align: middle; }
+    .status-dot.active { background: var(--good); box-shadow: 0 0 18px var(--good); }
+
+    .nick-box b { font-size: 18px; color: #fff; }
+    .role-badge { font-size: 10px; font-weight: 900; color: var(--violet); text-transform: uppercase; letter-spacing: 1px; }
+
+    .goal { margin: 14px 0 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; padding: 10px 12px; }
+    .goal-row { display:flex; justify-content:space-between; align-items:center; font-size: 11px; font-weight: 900; color: var(--muted); letter-spacing: .5px; margin-bottom: 8px; }
+    .bar { width: 100%; height: 10px; border-radius: 999px; background: rgba(0,0,0,0.35); overflow: hidden; border: 1px solid rgba(255,255,255,0.08); }
+    .bar > div { height: 100%; width: 0%; border-radius: 999px; transition: width 0.5s ease, background 0.5s ease; }
+
+    .screens-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
+    .screen-day { background: rgba(0,0,0,0.28); padding: 10px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.08); }
+    .screen-day small { font-size: 9px; color: var(--muted); display: block; margin-bottom: 2px; }
+    .screen-day b { font-size: 8px; color: var(--violet); display: block; margin-bottom: 5px; }
     .screen-input { width: 100%; background: none; border: none; color: #fff; text-align: center; font-size: 16px; font-weight: 900; outline: none; }
 
-    .btn { padding: 12px 20px; border-radius: 14px; border: none; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; }
-    .btn-violet { background: var(--violet); color: #fff; }
-    .btn-good { background: var(--good); color: #fff; }
-    
+    .mod-stats-list { display: flex; flex-direction: column; gap: 8px; }
+    .mod-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.06); }
+    .mod-input { width: 60px; background: none; border: none; color: #fff; text-align: right; font-size: 16px; font-weight: 900; outline: none; }
+
+    .stars-box { display: flex; justify-content: space-between; align-items: center; background: rgba(168, 85, 247, 0.1); border: 1px dashed var(--violet); padding: 10px 15px; border-radius: 15px; margin-top: 15px; cursor: pointer; }
+    .stars-box:hover { background: rgba(168, 85, 247, 0.2); border-style: solid; }
+    .stars-box label { font-size: 12px; font-weight: 900; color: var(--violet); text-transform: uppercase; cursor: pointer; }
+    .stars-display { color: var(--gold); font-size: 14px; font-weight: 900; text-transform: uppercase; }
+
     .admin-only { display: none !important; }
     body.editor-mode .admin-only { display: flex !important; }
 
-    .modal-overlay { position: fixed; inset: 0; background: rgba(5, 5, 11, 0.85); display: flex; align-items: center; justify-content: center; z-index: 20000; backdrop-filter: blur(15px); opacity: 0; pointer-events: none; }
-    .modal-overlay.active { opacity: 1; pointer-events: all; }
-    .modal-card { background: #0f0f1e; border: 1px solid var(--line); padding: 35px; border-radius: 35px; width: 95%; max-width: 450px; }
+    .logout-btn { background: rgba(255,68,68,0.1); color: var(--bad); border: 1px solid rgba(255,68,68,0.2); padding: 8px 15px; border-radius: 12px; font-size: 12px; font-weight: 900; cursor: pointer; }
+    .logout-btn:hover { background: var(--bad); color: #fff; }
 
-    .del-btn { position: absolute; top: 15px; right: 15px; background: rgba(239, 68, 68, 0.1); color: var(--bad); border: 1px solid rgba(239, 68, 68, 0.2); width: 30px; height: 30px; border-radius: 10px; cursor: pointer; display: none; align-items: center; justify-content: center; }
+    /* Удаление сотрудника */
+    .del-btn { position: absolute; top: 15px; right: 15px; background: rgba(239, 68, 68, 0.1); color: var(--bad); border: 1px solid rgba(239, 68, 68, 0.2); width: 28px; height: 28px; border-radius: 8px; cursor: pointer; align-items: center; justify-content: center; font-size: 16px; display: none; }
     body.editor-mode .del-btn { display: flex; }
+    .del-btn:hover { background: var(--bad); color: #fff; }
+
+    /* Стили для формы добавления */
+    .add-form-row { margin-bottom: 12px; text-align: left; }
+    .add-form-row label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; font-weight: 900; }
+    .add-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--line); padding: 10px; border-radius: 10px; color: #fff; outline: none; }
   </style>
 </head>
 
@@ -74,62 +128,115 @@
   <div class="bg-wrap"></div>
   <canvas id="particles"></canvas>
 
-  <div id="auth-overlay" style="position:fixed; inset:0; background:var(--bg); z-index:10000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(25px);">
-    <div class="modal-card" style="text-align:center; border: 1px solid rgba(255,255,255,0.05);">
-      <h1 style="margin:0 0 40px; font-weight:900; letter-spacing:-1px;">LoliLand Staff</h1>
-      <div id="auth-main">
-        <button class="btn" style="background:rgba(255,255,255,0.05); color:#fff; width:100%; margin-bottom:12px; justify-content:center;" onclick="showTeamSelect()">📖 Читатель</button>
-        <button class="btn btn-violet" style="width:100%; justify-content:center;" onclick="showPassInput()">🛠 Редактор</button>
+  <div class="modal-overlay" id="starModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalNick" style="margin:0; color:var(--violet); font-weight:900;">Сотрудник</h3>
+        <small style="color:var(--muted)">Детализация начисления звёзд</small>
       </div>
-      <div id="team-select" style="display:none;">
-        <button class="btn btn-violet" style="width:100%; margin-bottom:12px; justify-content:center;" onclick="login(false, 9)">Команда 9</button>
-        <button class="btn" style="background:var(--cyan); color:#000; width:100%; justify-content:center;" onclick="login(false, 10)">Команда 10</button>
-      </div>
-      <div id="pass-ui" style="display:none;">
-        <input type="password" id="admin-pass" class="search-input" style="width:100%; margin-bottom:15px; text-align:center;" placeholder="Пароль">
-        <button class="btn btn-violet" style="width:100%; justify-content:center;" onclick="login(true)">Войти</button>
-      </div>
+      <div id="modalContent"></div>
+      <button class="close-modal" onclick="closeStarModal()">ЗАКРЫТЬ</button>
     </div>
   </div>
 
   <div class="modal-overlay" id="addStaffModal">
     <div class="modal-card">
-      <h2 style="margin:0 0 25px; color:var(--violet)">+ Добавить сотрудника</h2>
-      <div style="display:grid; gap:15px;">
-        <div><label style="font-size:11px; color:var(--muted); font-weight:900; text-transform:uppercase;">Никнейм</label>
-        <input type="text" id="add-nick" class="search-input" style="width:100%;" placeholder="Введите ник..."></div>
-        <div><label style="font-size:11px; color:var(--muted); font-weight:900; text-transform:uppercase;">Роль</label>
-        <select id="add-role" class="search-input" style="width:100%;"><option value="10">Хелпер</option><option value="20">Ст.Хелпер</option><option value="40">Модератор</option><option value="70">Админ</option></select></div>
-        <div><label style="font-size:11px; color:var(--muted); font-weight:900; text-transform:uppercase;">Команда</label>
-        <select id="add-team" class="search-input" style="width:100%;"><option value="9">Команда 9</option><option value="10">Команда 10</option></select></div>
+      <div class="modal-header">
+        <h3 style="margin:0; color:var(--violet); font-weight:900;">Новый сотрудник</h3>
+        <small style="color:var(--muted)">Добавление в текущую неделю</small>
       </div>
-      <button class="btn btn-violet" style="width:100%; margin-top:30px; justify-content:center;" onclick="saveNewStaff()">СОХРАНИТЬ</button>
-      <button class="btn" style="background:transparent; color:var(--muted); width:100%; margin-top:10px; justify-content:center;" onclick="closeAddModal()">ОТМЕНА</button>
+      <div class="add-form-row">
+        <label>Никнейм</label>
+        <input type="text" id="add-nick" class="add-input" placeholder="Введите ник...">
+      </div>
+      <div class="add-form-row">
+        <label>Роль</label>
+        <select id="add-role" class="add-input">
+          <option value="10">Хелпер</option>
+          <option value="20">Ст.Хелпер</option>
+          <option value="30">Мл.Модератор</option>
+          <option value="40">Модератор</option>
+          <option value="50">Ст.Модератор</option>
+          <option value="60">Мл.Админ</option>
+          <option value="70">Админ</option>
+          <option value="80">Ст.Админ</option>
+        </select>
+      </div>
+      <div class="add-form-row">
+        <label>Команда</label>
+        <select id="add-team" class="add-input">
+          <option value="9">Команда 9</option>
+          <option value="10">Команда 10</option>
+        </select>
+      </div>
+      <button class="close-modal" onclick="saveNewStaff()">ДОБАВИТЬ</button>
+      <button class="close-modal" style="background:transparent; color:var(--muted); margin-top:5px;" onclick="closeAddModal()">ОТМЕНА</button>
     </div>
   </div>
 
-  <div class="wrap" id="main-wrap" style="max-width:1400px; margin:0 auto; display:none;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px; flex-wrap:wrap; gap:20px;">
+  <div class="toast" id="toast"><i></i><span id="toastText">Сохранено</span></div>
+
+  <div id="auth-overlay">
+    <div class="auth-card">
+      <h1 style="margin:0 0 10px; font-weight:900;">LoliLand Staff</h1>
+      <div id="auth-main">
+        <button class="auth-btn" style="background: rgba(255,255,255,0.05); color: #fff;" onclick="showTeamSelect()">📖 Читатель</button>
+        <button class="auth-btn" style="background: var(--violet); color: #fff;" onclick="showPassInput()">🛠 Редактор</button>
+      </div>
+      <div id="team-select" style="display:none; margin-top:10px;">
+        <button class="auth-btn" style="background: var(--violet); color: #fff;" onclick="login(false, 9)">Команда 9</button>
+        <button class="auth-btn" style="background: var(--cyan); color: #000;" onclick="login(false, 10)">Команда 10</button>
+        <button class="auth-btn" style="background: transparent; color: #fff;" onclick="resetAuthUI()">Назад</button>
+      </div>
+      <div id="pass-ui" style="display:none; margin-top:10px;">
+        <input type="password" id="admin-pass" class="search-input" placeholder="Пароль" style="width:100%;">
+        <button class="auth-btn" style="background: var(--violet); color: #fff;" onclick="login(true)">Войти</button>
+        <button class="auth-btn" style="background: transparent; color: #fff;" onclick="resetAuthUI()">Назад</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap" id="main-wrap">
+    <div class="top-bar">
       <div>
-        <h2 style="margin:0; font-weight:900; font-size:28px;">Staff Dashboard</h2>
-        <div style="display:flex; gap:12px; margin-top:15px;">
-          <select id="weekSelect" class="search-input" onchange="loadWeek(this.value)"></select>
-          <button class="btn" style="background:rgba(239,68,68,0.1); color:var(--bad); font-size:12px;" onclick="logout()">Выйти</button>
+        <h2 style="margin:0; font-weight:900;">Staff Dashboard</h2>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
+            <select id="weekSelect" class="search-input" onchange="loadWeek(this.value)"></select>
+            <button class="logout-btn" onclick="logout()">Выйти</button>
         </div>
       </div>
-      <div style="display:flex; gap:12px; align-items:center;">
-        <input type="text" id="searchField" class="search-input" placeholder="Поиск по нику..." oninput="render()">
-        <button class="btn btn-good admin-only" onclick="openAddModal()">+ Сотрудник</button>
-        <button class="btn btn-violet admin-only" onclick="createNewWeek()">+ Неделя</button>
+   
+      <div style="display:flex; gap:15px; align-items:center;">
+        <input type="text" id="searchField" class="search-input" placeholder="Поиск." oninput="render()">
+        
+        <select id="teamFilter" class="search-input admin-only" onchange="render()" style="background: var(--violet); border:none; cursor:pointer;">
+          <option value="all">Все команды</option>
+          <option value="9">Команда 9</option>
+          <option value="10">Команда 10</option>
+        </select>
+
+        <button class="auth-btn admin-only" style="margin:0; padding:10px 20px; background:var(--good); color:#fff; width:auto;" onclick="openAddModal()">+ Сотрудник</button>
+        <button class="auth-btn admin-only" style="margin:0; padding:10px 20px; background:var(--violet); color:#fff; width:auto;" onclick="createNewWeek()">+ Неделя</button>
       </div>
     </div>
 
-    <div id="section-9"><h3 style="color:var(--violet); display:flex; align-items:center; gap:10px;">Команда 9 <span id="cnt-9" style="font-size:14px; color:var(--muted); font-weight:400;"></span></h3><div class="staff-grid" id="grid-9" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(350px, 1fr)); gap:25px;"></div></div>
-    <div id="section-10" style="margin-top:60px;"><h3 style="color:var(--cyan); display:flex; align-items:center; gap:10px;">Команда 10 <span id="cnt-10" style="font-size:14px; color:var(--muted); font-weight:400;"></span></h3><div class="staff-grid" id="grid-10" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(350px, 1fr)); gap:25px;"></div></div>
+    <div id="section-9" class="team-section">
+      <div class="team-title">Команда 9 <span id="cnt-9" style="font-size:14px; color:var(--muted)"></span></div>
+      <div class="staff-grid" id="grid-9"></div>
+    </div>
+
+    <div id="section-10" class="team-section">
+      <div class="team-title" style="color:var(--cyan)">Команда 10 <span id="cnt-10" style="font-size:14px; color:var(--muted)"></span></div>
+      <div class="staff-grid" id="grid-10"></div>
+    </div>
   </div>
 
 <script>
-const firebaseConfig = { apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg", databaseURL: "https://aktiv-d4d72-default-rtdb.firebaseio.com", projectId: "aktiv-d4d72" };
+const firebaseConfig = {
+  apiKey: "AIzaSyDugMq5xcJoVdLC9zPcAgDKCiAWpyYeyQg",
+  databaseURL: "https://aktiv-d4d72-default-rtdb.firebaseio.com",
+  projectId: "aktiv-d4d72",
+};
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
@@ -137,38 +244,60 @@ const ROLE_NAMES = { 80:"Ст.Админ", 70:"Админ", 60:"Мл.Админ"
 const MASTER_PASS = '123456789Aa';
 let isEditor = false, currentWeekKey = "", weekData = null, activeTeam = null;
 
+// Красивое отображение дат 16.02 - 22.02
 function formatWeekLabel(dateStr) {
-  const d = new Date(dateStr); const day = d.getDay() || 7;
-  const mon = new Date(d); mon.setDate(d.getDate() - day + 1);
-  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-  const f = (date) => date.toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit'});
-  return `${f(mon)} - ${f(sun)}`;
+  const d = new Date(dateStr);
+  const day = d.getDay() || 7;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() - day + 1);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const f = (date) => date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+  return `${f(monday)} - ${f(sunday)}`;
 }
 
-function showTeamSelect() { document.getElementById('auth-main').style.display='none'; document.getElementById('team-select').style.display='block'; }
-function showPassInput() { document.getElementById('auth-main').style.display='none'; document.getElementById('pass-ui').style.display='block'; }
+function showTeamSelect() { document.getElementById('auth-main').style.display = 'none'; document.getElementById('team-select').style.display = 'block'; }
+function showPassInput() { document.getElementById('auth-main').style.display = 'none'; document.getElementById('pass-ui').style.display = 'block'; }
+function resetAuthUI() { document.getElementById('auth-main').style.display = 'block'; document.getElementById('team-select').style.display = 'none'; document.getElementById('pass-ui').style.display = 'none'; }
+
+function login(ed, team = null) {
+  if (ed) {
+    if (document.getElementById('admin-pass').value !== MASTER_PASS) return alert('Неверный пароль!');
+    localStorage.setItem('staff_auth', 'editor');
+  } else {
+    localStorage.setItem('staff_auth', 'reader');
+    localStorage.setItem('staff_team', team);
+    activeTeam = team;
+  }
+  applyLogin(ed);
+}
+
+function applyLogin(ed) {
+  isEditor = ed;
+  if(ed) document.body.classList.add('editor-mode');
+  else activeTeam = localStorage.getItem('staff_team');
+  document.getElementById('auth-overlay').style.display = 'none';
+  document.getElementById('main-wrap').classList.add('active');
+  start();
+}
+
 function logout() { localStorage.clear(); location.reload(); }
-
-function login(ed, team) {
-  if(ed && document.getElementById('admin-pass').value !== MASTER_PASS) return alert('Доступ закрыт');
-  localStorage.setItem('staff_auth', ed ? 'editor' : 'reader');
-  if(team) localStorage.setItem('staff_team', team);
-  location.reload();
-}
 
 window.onload = () => {
   const auth = localStorage.getItem('staff_auth');
-  if(!auth) return;
-  isEditor = (auth === 'editor');
-  activeTeam = localStorage.getItem('staff_team');
-  if(isEditor) document.body.classList.add('editor-mode');
-  document.getElementById('auth-overlay').style.display='none';
-  document.getElementById('main-wrap').style.display='block';
-  start();
+  if (auth === 'editor') applyLogin(true);
+  else if (auth === 'reader') applyLogin(false);
 };
 
+function showToast(text="Сохранено") {
+  const t = document.getElementById('toast');
+  document.getElementById('toastText').textContent = text;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1200);
+}
+
 async function start() {
-  const snap = await db.ref("activity").limitToLast(12).once("value");
+  const snap = await db.ref("activity").limitToLast(15).once("value");
   const weeks = Object.keys(snap.val() || {}).sort().reverse();
   document.getElementById('weekSelect').innerHTML = weeks.map(w => `<option value="${w}">${formatWeekLabel(w)}</option>`).join('');
   loadWeek(weeks[0]);
@@ -182,76 +311,121 @@ function loadWeek(key) {
   });
 }
 
+function calcStars(val, type) {
+  if (type === 'scr') { if (val >= 1 && val <= 10) return 1; if (val > 10 && val <= 40) return 2; if (val > 40) return 3; }
+  if (type === 'pen') { if (val >= 5 && val <= 10) return 1; if (val > 10 && val <= 17) return 2; if (val >= 18) return 3; }
+  if (type === 'tick') { if (val > 0 && val < 5) return 1; if (val >= 5 && val <= 10) return 2; if (val >= 11) return 3; }
+  return 0;
+}
+
+// Функции модалок
+function openAddModal() { document.getElementById('addStaffModal').classList.add('active'); }
+function closeAddModal() { document.getElementById('addStaffModal').classList.remove('active'); }
+function closeStarModal() { document.getElementById('starModal').classList.remove('active'); }
+
+async function saveNewStaff() {
+  const nick = document.getElementById('add-nick').value.trim();
+  const role = Number(document.getElementById('add-role').value);
+  const team = Number(document.getElementById('add-team').value);
+  if(!nick) return alert("Введите ник!");
+  
+  const id = "id_" + Date.now();
+  const people = weekData.people || [];
+  people.push({ id, nick, role, team });
+  
+  await db.ref("activity/" + currentWeekKey + "/people").set(people);
+  document.getElementById('add-nick').value = "";
+  closeAddModal();
+  showToast("Сотрудник добавлен");
+}
+
+async function removeStaff(id, nick) {
+  if(!confirm(`Удалить ${nick}?`)) return;
+  const people = (weekData.people || []).filter(p => p.id !== id);
+  await db.ref("activity/" + currentWeekKey + "/people").set(people);
+  await db.ref("activity/" + currentWeekKey + "/entries/" + id).remove();
+  showToast("Удалено");
+}
+
 function render() {
   const search = document.getElementById('searchField').value.toLowerCase();
+  const filter = document.getElementById('teamFilter').value;
   const grids = { 9: document.getElementById('grid-9'), 10: document.getElementById('grid-10') };
   grids[9].innerHTML = ""; grids[10].innerHTML = "";
+  const people = (weekData.people || []).sort((a,b) => b.role - a.role);
   let counts = { 9:0, 10:0 };
 
-  (weekData.people || []).forEach(p => {
-    if(!isEditor && p.team != activeTeam) return;
+  people.forEach(p => {
     if(search && !p.nick.toLowerCase().includes(search)) return;
+    const team = p.team || 9;
+    if (isEditor) { if (filter !== 'all' && team != filter) return; } 
+    else { if (team != activeTeam) return; }
 
-    let total = 0;
-    [0,1,2,3,4,5,6].forEach(i => total += Number(weekData.entries?.[p.id]?.[i]?.online || 0));
-    
+    let totalScreens = 0;
+    [0,1,2,3,4,5,6].forEach(i => totalScreens += Number(weekData.entries?.[p.id]?.[i]?.online || 0));
+
+    const e = weekData.entries?.[p.id]?.[99] || { mutes:0, bans:0, tickets:0 };
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
-      <div class="del-btn" onclick="removeStaff('${p.id}')">×</div>
-      <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+      <div class="del-btn" onclick="removeStaff('${p.id}','${p.nick}')">×</div>
+      <div class="card-header">
         <div class="avatar-circle">✦</div>
-        <div><div style="font-size:10px; font-weight:900; color:var(--violet); text-transform:uppercase; letter-spacing:1px;">${ROLE_NAMES[p.role]}</div><b style="font-size:20px;">${p.nick}</b></div>
+        <div class="nick-box">
+          <span class="role-badge">${ROLE_NAMES[p.role]}</span>
+          <span class="status-dot ${totalScreens > 0 ? 'active' : ''}"></span><br>
+          <b>${p.nick}</b>
+        </div>
       </div>
       <div class="goal">
-        <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:900; color:var(--muted);"><span>СКРИНЫ ЗА НЕДЕЛЮ</span><span style="color:#fff">${total}</span></div>
-        <div class="bar"><div style="width:${Math.min(total/2.5, 100)}%; background:${total > 120 ? 'var(--good)' : 'var(--warn)'}; box-shadow:0 0 15px ${total > 120 ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}"></div></div>
+        <div class="goal-row"><span>Активность скринов</span><span style="color:#fff">${totalScreens}</span></div>
+        <div class="bar"><div style="width:${Math.min(totalScreens/3, 100)}%; background:${totalScreens > 100 ? 'var(--good)' : 'var(--warn)'}"></div></div>
       </div>
       <div class="screens-grid">
         ${['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].map((name, i) => `
-          <div class="screen-day"><div style="font-size:9px; color:var(--muted); margin-bottom:4px;">${name}</div>
-          <input type="number" class="screen-input" value="${weekData.entries?.[p.id]?.[i]?.online || 0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}',${i},'online',this.value)"></div>
+          <div class="screen-day">
+            <small>${name}</small>
+            <b>СКРИНЫ</b>
+            <input type="number" class="screen-input" value="${weekData.entries?.[p.id]?.[i]?.online || 0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}',${i},'online',this.value)">
+          </div>
         `).join('')}
       </div>
+      <div class="mod-stats-list">
+        <div class="mod-item"><label>Муты</label><input type="number" class="mod-input" value="${e.mutes||0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}',99,'mutes',this.value)"></div>
+        <div class="mod-item"><label>Баны</label><input type="number" class="mod-input" value="${e.bans||0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}',99,'bans',this.value)"></div>
+        <div class="mod-item"><label>Тикеты</label><input type="number" class="mod-input" value="${e.tickets||0}" ${!isEditor?'disabled':''} onchange="upd('${p.id}',99,'tickets',this.value)"></div>
+      </div>
     `;
-    grids[p.team].appendChild(card);
-    counts[p.team]++;
+
+    if(grids[team]) { grids[team].appendChild(card); counts[team]++; }
   });
   document.getElementById('cnt-9').innerText = `(${counts[9]} чел.)`;
   document.getElementById('cnt-10').innerText = `(${counts[10]} чел.)`;
 }
 
-function upd(id, d, f, v) { db.ref(`activity/${currentWeekKey}/entries/${id}/${d}/${f}`).set(Number(v)); }
-function openAddModal() { document.getElementById('addStaffModal').classList.add('active'); }
-function closeAddModal() { document.getElementById('addStaffModal').classList.remove('active'); }
-
-async function saveNewStaff() {
-  const nick = document.getElementById('add-nick').value.trim();
-  if(!nick) return;
-  const people = weekData.people || [];
-  people.push({ id: "id_"+Date.now(), nick, role: Number(document.getElementById('add-role').value), team: Number(document.getElementById('add-team').value) });
-  await db.ref(`activity/${currentWeekKey}/people`).set(people);
-  document.getElementById('add-nick').value = "";
-  closeAddModal();
-}
-
-async function removeStaff(id) {
-  if(!confirm('Удалить этого сотрудника из списка?')) return;
-  const people = weekData.people.filter(p => p.id !== id);
-  await db.ref(`activity/${currentWeekKey}/people`).set(people);
+function upd(id, d, f, v) {
+  if(isEditor) {
+    db.ref("activity/" + currentWeekKey + "/entries/" + id + "/" + d + "/" + f).set(Number(v)||0);
+    showToast();
+  }
 }
 
 async function createNewWeek() {
-  const d = prompt("Введите дату начала недели (ГГГГ-ММ-ДД):", new Date().toISOString().split('T')[0]);
-  if(d) { await db.ref("activity/" + d).set({ people: weekData.people || [], entries: {} }); location.reload(); }
+  const d = prompt("Дата начала (ГГГГ-ММ-ДД):", new Date().toISOString().split('T')[0]);
+  if(d) {
+    await db.ref("activity/" + d).set({ people: weekData.people || [], entries: {} });
+    location.reload();
+  }
 }
 
 (function particles(){
-  const c = document.getElementById('particles'); const ctx = c.getContext('2d');
-  let w, h, pts = [];
-  function resize(){ w=c.width=innerWidth; h=c.height=innerHeight; pts=Array.from({length:60}, ()=>({x:Math.random()*w, y:Math.random()*h, r:Math.random()*1.5+0.5, vx:(Math.random()-0.5)*0.5, vy:(Math.random()-0.5)*0.5})); }
+  const c = document.getElementById('particles');
+  const ctx = c.getContext('2d');
+  let w=0,h=0, DPR=Math.min(2, window.devicePixelRatio||1);
+  let pts=[];
+  function resize(){ w=c.width=Math.floor(innerWidth*DPR); h=c.height=Math.floor(innerHeight*DPR); pts=Array.from({length:60}, ()=>({x:Math.random()*w, y:Math.random()*h, r:(Math.random()*1.5+0.5)*DPR, vx:(Math.random()*0.5-0.25)*DPR, vy:(Math.random()*0.5-0.25)*DPR, a:Math.random()*0.5})); }
   addEventListener('resize', resize); resize();
-  function tick(){ ctx.clearRect(0,0,w,h); pts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; if(p.x<0)p.x=w; if(p.x>w)p.x=0; if(p.y<0)p.y=h; if(p.y>h)p.y=0; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.fill(); }); requestAnimationFrame(tick); }
+  function tick(){ ctx.clearRect(0,0,w,h); for(const p of pts){ p.x+=p.vx; p.y+=p.vy; if(p.x<0)p.x=w; if(p.x>w)p.x=0; if(p.y<0)p.y=h; if(p.y>h)p.y=0; ctx.beginPath(); ctx.globalAlpha=p.a; ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill(); } requestAnimationFrame(tick); }
   tick();
 })();
 </script>
